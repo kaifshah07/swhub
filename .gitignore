@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Build output
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Vercel
+.vercel/
+
+# Render
+.render/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+
+# Prisma generated
+prisma/generated
+
+# Cache
+.cache/

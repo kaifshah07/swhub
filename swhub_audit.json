@@ -1,0 +1,182 @@
+[
+  {
+    "file": "balmitra-backend\\.env",
+    "line": 27,
+    "content": "INITIAL_ADMIN_EMAIL=shahkaif004@balmitra.com"
+  },
+  {
+    "file": "balmitra-backend\\.env.example",
+    "line": 23,
+    "content": "BREVO_SENDER_NAME=Balmitra"
+  },
+  {
+    "file": "balmitra-backend\\package.json",
+    "line": 2,
+    "content": "\"name\": \"balmitra-backend\","
+  },
+  {
+    "file": "balmitra-backend\\render.yaml",
+    "line": 3,
+    "content": "name: balmitra-backend"
+  },
+  {
+    "file": "balmitra-backend\\src\\app.ts",
+    "line": 19,
+    "content": "\"https://balmitra-final.vercel.app\","
+  },
+  {
+    "file": "balmitra-backend\\src\\app.ts",
+    "line": 64,
+    "content": "message: \"Balmitra Backend API is Running 🚀\","
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 25,
+    "content": "name: \"Balmitra\","
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 36,
+    "content": "subject: \"Balmitra Email Verification OTP\","
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 42,
+    "content": "<h2>Welcome to Balmitra</h2>"
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 57,
+    "content": "<p>Balmitra Team</p>"
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 92,
+    "content": "name: \"Balmitra\","
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 102,
+    "content": "name: \"Balmitra Admin\","
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 150,
+    "content": "Balmitra Franchise Application"
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\brevo.ts",
+    "line": 347,
+    "content": "Balmitra Franchise Enquiry System"
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\env.ts",
+    "line": 15,
+    "content": "JWT_SECRET: process.env.JWT_SECRET || \"balmitra_secret\","
+  },
+  {
+    "file": "balmitra-backend\\src\\config\\env.ts",
+    "line": 33,
+    "content": "BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || \"Balmitra\","
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\admin\\admin.seed.ts",
+    "line": 25,
+    "content": "email: \"admin@balmitra.com\","
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\banner\\banner.controller.ts",
+    "line": 13,
+    "content": "const upload = await uploadToCloudinary(req.file.buffer, \"balmitra/banners\");"
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\banner\\banner.controller.ts",
+    "line": 59,
+    "content": "\"balmitra/banners\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\category\\category.controller.ts",
+    "line": 9,
+    "content": "? (await uploadToCloudinary(req.file.buffer, \"balmitra/categories\")).secure_url"
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\category\\category.controller.ts",
+    "line": 63,
+    "content": "? (await uploadToCloudinary(req.file.buffer, \"balmitra/categories\")).secure_url"
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-advertisement\\homepage-advertisement.controller.ts",
+    "line": 58,
+    "content": "\"balmitra/ads\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-advertisement\\homepage-advertisement.controller.ts",
+    "line": 70,
+    "content": "\"balmitra/ads\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-advertisement\\homepage-advertisement.controller.ts",
+    "line": 126,
+    "content": "\"balmitra/ads\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-advertisement\\homepage-advertisement.controller.ts",
+    "line": 138,
+    "content": "\"balmitra/ads\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-hero\\homepage-hero.controller.ts",
+    "line": 37,
+    "content": "\"balmitra/heroes\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-hero\\homepage-hero.controller.ts",
+    "line": 48,
+    "content": "\"balmitra/heroes\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-hero\\homepage-hero.controller.ts",
+    "line": 105,
+    "content": "\"balmitra/heroes\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\homepage-hero\\homepage-hero.controller.ts",
+    "line": 117,
+    "content": "\"balmitra/heroes\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\product\\product.service.ts",
+    "line": 31,
+    "content": "\"balmitra/products\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\product\\product.service.ts",
+    "line": 454,
+    "content": "\"balmitra/products\""
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\settings\\settings.service.ts",
+    "line": 13,
+    "content": "websiteName: \"Balmitra\","
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\settings\\settings.service.ts",
+    "line": 14,
+    "content": "email: \"info@balmitra.com\","
+  },
+  {
+    "file": "balmitra-backend\\src\\modules\\vendor-enquiry\\vendor-enquiry.service.ts",
+    "line": 54,
+    "content": "name: \"Balmitra Admin\","
+  },
+  {
+    "file": "balmitra-backend\\src\\server.ts",
+    "line": 14,
+    "content": "🚀 Balmitra Backend Started"
+  },
+  {
+    "file": "balmitra-backend\\src\\utils\\cloudinaryUploads.ts",
+    "line": 6,
+    "content": "folder = \"balmitra/products\""
+  }
+]

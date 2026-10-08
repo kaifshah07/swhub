@@ -1,0 +1,32 @@
+export const products = [
+  {
+    id: 1,
+    name: "Fortune Sunlite Refined Sunflower Oil 1L",
+    slug: "fortune-sunflower-oil-1l",
+    category: "groceries",
+    brand: "Fortune",
+    price: 145,
+    mrp: 175,
+    image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    id: 2,
+    name: "Tata Tea Premium Desh Ki Chai 500g",
+    slug: "tata-tea-premium-500g",
+    category: "beverages",
+    brand: "Tata Tea",
+    price: 260,
+    mrp: 310,
+    image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    id: 3,
+    name: "Milton Stainless Steel Insulated Flask 1000ml",
+    slug: "milton-stainless-flask-1000ml",
+    category: "kitchenware",
+    brand: "Milton",
+    price: 799,
+    mrp: 1199,
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=60",
+  },
+];

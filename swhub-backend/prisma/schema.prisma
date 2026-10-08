@@ -1,0 +1,542 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Admin {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  fullName  String
+  email     String    @unique
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("admins")
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  slug          String        @unique
+  description   String?
+  image         String?
+  displayOrder  Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  products      Product[]
+  subcategories Subcategory[]
+
+  @@map("categories")
+}
+
+model Subcategory {
+  id           Int       @id @default(autoincrement())
+  name         String
+  slug         String
+  description  String?
+  image        String?
+  displayOrder Int       @default(0)
+  isActive     Boolean   @default(true)
+  categoryId   Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, name])
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+  @@map("subcategories")
+}
+
+model Product {
+  id                Int            @id @default(autoincrement())
+  name              String
+  slug              String         @unique
+  sku               String         @unique
+  shortDescription  String?
+  description       String?
+  brand             String?
+  ageGroup          String?
+  price             Decimal        @db.Decimal(10, 2)
+  discountPrice     Decimal?       @db.Decimal(10, 2)
+  franchisePrice    Decimal?       @db.Decimal(10, 2)
+  stock             Int            @default(0)
+  thumbnail         String?
+  thumbnailPublicId String?
+  isFeatured        Boolean        @default(false)
+  isTrending        Boolean        @default(false)
+  isNewArrival      Boolean        @default(false)
+  isActive          Boolean        @default(true)
+  isDeleted         Boolean        @default(false)
+  metaTitle         String?
+  metaDescription   String?
+  categoryId        Int
+  subcategoryId     Int?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  isBestSeller      Boolean        @default(false)
+  isFlashSale       Boolean        @default(false)
+  orderItems        OrderItem[]
+  franchiseOrderItems FranchiseOrderItem[]
+  franchiseStocks     FranchiseStock[]
+  franchiseInvoiceItems FranchiseInvoiceItem[]
+  gallery           ProductImage[]
+  category          Category       @relation(fields: [categoryId], references: [id])
+  subcategory       Subcategory?   @relation(fields: [subcategoryId], references: [id])
+  reviews           Review[]
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  image     String
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model Banner {
+  id           Int      @id @default(autoincrement())
+  title        String
+  subtitle     String?
+  image        String
+  redirectUrl  String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("banners")
+}
+
+model HomepageSection {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  title       String?
+  subtitle    String?
+  bannerImage String?
+  redirectUrl String?
+  isActive    Boolean  @default(true)
+  productIds  Json?
+  categoryIds Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("homepage_sections")
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  orderNumber   String        @unique
+  customerId    Int?
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  paymentMethod String
+  paymentStatus PaymentStatus @default(PENDING)
+  orderStatus   OrderStatus   @default(PENDING)
+  address       String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  items         OrderItem[]
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  payment       Payment?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  productId Int
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Customer {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  phone        String    @unique
+  password     String
+  isVerified   Boolean   @default(false)
+  isBlocked    Boolean   @default(false)
+  otpCode      String?
+  otpExpiresAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orders       Order[]
+  reviews      Review[]
+
+  @@map("customers")
+}
+
+model Coupon {
+  id             Int          @id @default(autoincrement())
+  code           String       @unique
+  description    String?
+  discountType   DiscountType
+  discountValue  Decimal      @db.Decimal(10, 2)
+  minOrderAmount Decimal?     @db.Decimal(10, 2)
+  maxDiscount    Decimal?     @db.Decimal(10, 2)
+  usageLimit     Int?
+  usedCount      Int          @default(0)
+  isActive       Boolean      @default(true)
+  expiresAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("coupons")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  productId  Int
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+
+  @@map("reviews")
+}
+
+model WebsiteSetting {
+  id             Int      @id @default(autoincrement())
+  websiteName    String
+  logo           String?
+  favicon        String?
+  email          String
+  phone          String
+  address        String
+  facebook       String?
+  instagram      String?
+  youtube        String?
+  linkedin       String?
+  footerText     String?
+  seoTitle       String?
+  seoDescription String?
+  smtpHost       String?
+  smtpPort       Int?
+  smtpUser       String?
+  smtpPassword   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("website_settings")
+}
+
+model Payment {
+  id                Int           @id @default(autoincrement())
+  paymentId         String        @unique
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  orderId           Int           @unique
+  amount            Decimal       @db.Decimal(10, 2)
+  paymentMethod     PaymentMethod
+  paymentStatus     PaymentStatus @default(PENDING)
+  transactionId     String?
+  refunded          Boolean       @default(false)
+  refundAmount      Decimal?      @db.Decimal(10, 2)
+  refundDate        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model VendorEnquiry {
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  mobile             String
+  email              String?
+  city               String
+  state              String
+  currentBusiness    String?
+  investmentCapacity String?
+  preferredLocation  String?
+  message            String?
+  status             VendorEnquiryStatus @default(PENDING)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@map("vendor_enquiries")
+}
+
+model FranchiseEnquiry {
+  id                  Int                    @id @default(autoincrement())
+  fullName            String
+  mobile              String
+  email               String
+  city                String
+  state               String
+  ownsBusiness        Boolean                @default(false)
+  currentBusinessName String?
+  currentBusinessType String?
+  businessExperience  String?
+  preferredLocation   String
+  preferredCity       String
+  preferredArea       String?
+  investmentCapacity  String
+  storeType           String
+  startTimeline       String
+  message             String?
+  status              FranchiseEnquiryStatus @default(NEW)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  @@map("franchise_enquiries")
+}
+
+model HomepageHero {
+  id           Int      @id @default(autoincrement())
+  title        String
+  subtitle     String?
+  desktopImage String
+  mobileImage  String?
+  buttonText   String?
+  buttonUrl    String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("homepage_heroes")
+}
+
+model HomepageAdvertisement {
+  id           Int      @id @default(autoincrement())
+  title        String?
+  desktopImage String
+  mobileImage  String?
+  redirectUrl  String?
+  position     String
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("homepage_advertisements")
+}
+
+model HomepageFlashSale {
+  id         Int       @id @default(autoincrement())
+  title      String
+  endDate    DateTime?
+  isActive   Boolean   @default(true)
+  productIds Json
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("homepage_flash_sales")
+}
+
+model HomepageCollection {
+  id           Int      @id @default(autoincrement())
+  title        String
+  image        String
+  redirectUrl  String
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("homepage_collections")
+}
+
+model Brand {
+  id           Int      @id @default(autoincrement())
+  name         String
+  logo         String
+  redirectUrl  String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("brands")
+}
+
+model TrustFeature {
+  id           Int     @id @default(autoincrement())
+  title        String
+  description  String
+  icon         String
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  @@map("trust_features")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  COD
+  ONLINE
+}
+
+enum VendorEnquiryStatus {
+  PENDING
+  CONTACTED
+  APPROVED
+  REJECTED
+}
+
+enum FranchiseEnquiryStatus {
+  NEW
+  CONTACTED
+  IN_PROGRESS
+  CONVERTED
+  REJECTED
+}
+
+model FranchiseUser {
+  id              Int       @id @default(autoincrement())
+  franchiseId     String    @unique
+  fullName        String
+  email           String    @unique
+  phone           String    @unique
+  password        String
+  roleTier        String
+  gstNumber       String?
+  parentId        Int?
+  parent          FranchiseUser?  @relation("FranchiseHierarchy", fields: [parentId], references: [id])
+  children        FranchiseUser[] @relation("FranchiseHierarchy")
+  address         String
+  city            String
+  state           String
+  pincode         String
+  businessName    String
+  shopName        String
+  isActive        Boolean   @default(true)
+  otpCode         String?
+  otpExpiresAt    DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  orders          FranchiseOrder[]
+  stocks          FranchiseStock[]
+  invoices        FranchiseInvoice[]
+
+  @@map("franchise_users")
+}
+
+model FranchiseOrder {
+  id              Int       @id @default(autoincrement())
+  orderNumber     String    @unique
+  franchiseId     Int
+  totalAmount     Decimal   @db.Decimal(10, 2)
+  paymentStatus   PaymentStatus @default(PENDING)
+  orderStatus     OrderStatus   @default(PENDING)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  franchise       FranchiseUser @relation(fields: [franchiseId], references: [id])
+  items           FranchiseOrderItem[]
+
+  @@map("franchise_orders")
+}
+
+model FranchiseOrderItem {
+  id              Int       @id @default(autoincrement())
+  quantity        Int
+  price           Decimal   @db.Decimal(10, 2)
+  productId       Int
+  orderId         Int
+  
+  order           FranchiseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product        @relation(fields: [productId], references: [id])
+
+  @@map("franchise_order_items")
+}
+
+model FranchiseStock {
+  id              Int       @id @default(autoincrement())
+  franchiseId     Int
+  productId       Int
+  quantity        Int       @default(0)
+  
+  franchise       FranchiseUser @relation(fields: [franchiseId], references: [id])
+  product         Product       @relation(fields: [productId], references: [id])
+
+  @@unique([franchiseId, productId])
+  @@map("franchise_stocks")
+}
+
+model FranchiseInvoice {
+  id              Int       @id @default(autoincrement())
+  invoiceNumber   String    @unique
+  franchiseId     Int
+  customerName    String?
+  customerPhone   String?
+  totalAmount     Decimal   @db.Decimal(10, 2)
+  taxAmount       Decimal   @db.Decimal(10, 2)
+  discount        Decimal?  @db.Decimal(10, 2)
+  paymentMethod   PaymentMethod
+  createdAt       DateTime  @default(now())
+  
+  franchise       FranchiseUser @relation(fields: [franchiseId], references: [id])
+  items           FranchiseInvoiceItem[]
+
+  @@map("franchise_invoices")
+}
+
+model FranchiseInvoiceItem {
+  id              Int       @id @default(autoincrement())
+  invoiceId       Int
+  productId       Int
+  quantity        Int
+  price           Decimal   @db.Decimal(10, 2)
+  taxRate         Decimal   @db.Decimal(5, 2) @default(18.00)
+  
+  invoice         FranchiseInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product         Product          @relation(fields: [productId], references: [id])
+
+  @@map("franchise_invoice_items")
+}

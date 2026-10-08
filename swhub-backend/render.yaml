@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: balmitra-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CORS_ORIGINS
+        value: https://your-vercel-domain.vercel.app # Replace with your actual Vercel domain
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_USERNAME
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
