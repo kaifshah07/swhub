@@ -1,6 +1,6 @@
 const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-export const API_URL = (configuredApiUrl || "http://localhost:5000/api").replace(
+export const API_URL = (configuredApiUrl || "https://swhub.onrender.com/api").replace(
   /\/$/,
   ""
 );
