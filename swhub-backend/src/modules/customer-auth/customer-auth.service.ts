@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import { prisma } from "../../config/database";
 import { sendOtpEmail } from "../../config/brevo";
 import { env } from "../../config/env";
@@ -343,33 +344,39 @@ export class CustomerAuthService {
     };
   }
 
-  // =========================
-  // GOOGLE LOGIN / REGISTER
-  // =========================
+  // ============================================
+  // GOOGLE LOGIN / REGISTER (google-auth-library)
+  // ============================================
 
   static async googleLogin(idToken: string) {
-    if (!idToken) {
+    if (!idToken || typeof idToken !== "string" || !idToken.trim()) {
       throw new Error("Google ID token is required");
     }
 
-    // Call Google's official public tokeninfo endpoint
-    const response = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`
-    );
+    const clientId = env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      throw new Error(
+        "Google authentication is not yet configured on the server. GOOGLE_CLIENT_ID is missing."
+      );
+    }
 
-    if (!response.ok) {
+    const client = new OAuth2Client(clientId);
+
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken: idToken.trim(),
+        audience: clientId,
+      });
+    } catch (err: any) {
+      console.error("Google verifyIdToken error:", err?.message || err);
       throw new Error("Invalid or expired Google token");
     }
 
-    const payload = (await response.json()) as {
-      iss?: string;
-      aud?: string;
-      sub?: string;
-      email?: string;
-      email_verified?: string | boolean;
-      name?: string;
-      picture?: string;
-    };
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw new Error("Invalid Google token payload");
+    }
 
     // 1. Verify issuer
     const validIssuers = ["accounts.google.com", "https://accounts.google.com"];
@@ -377,57 +384,80 @@ export class CustomerAuthService {
       throw new Error("Invalid token issuer");
     }
 
-    // 2. Verify audience if configured
-    if (env.GOOGLE_CLIENT_ID && payload.aud !== env.GOOGLE_CLIENT_ID) {
-      throw new Error("Google token audience mismatch");
-    }
-
-    // 3. Verify email is verified by Google
-    const isEmailVerified =
-      payload.email_verified === "true" || payload.email_verified === true;
-    if (!payload.email || !isEmailVerified) {
+    // 2. Verify email is verified by Google
+    if (!payload.email || !payload.email_verified) {
       throw new Error("Google account email is not verified");
     }
 
-    const email = payload.email.toLowerCase().trim();
-    const name = payload.name || email.split("@")[0] || "Google User";
-    const googleSub = payload.sub || Date.now().toString();
+    // 3. Google immutable subject (sub)
+    const googleSub = payload.sub;
+    if (!googleSub) {
+      throw new Error("Google token is missing subject (sub) claim");
+    }
 
-    // Check if customer already exists
+    const email = payload.email.toLowerCase().trim();
+    const name = payload.name?.trim() || email.split("@")[0] || "Google User";
+
+    // 4. Safe account mapping by Google's stable sub identifier
     let customer = await prisma.customer.findUnique({
-      where: { email },
+      where: { googleId: googleSub },
     });
 
     if (customer) {
+      // Handle blocked account
       if (customer.isBlocked) {
-        throw new Error("Your account has been blocked. Please contact support.");
-      }
-
-      // If existing account was unverified, mark verified since Google confirmed email ownership
-      if (!customer.isVerified) {
-        customer = await prisma.customer.update({
-          where: { id: customer.id },
-          data: { isVerified: true, otpCode: null, otpExpiresAt: null },
-        });
+        const error: any = new Error("Your account has been blocked. Please contact support.");
+        error.code = "ACCOUNT_BLOCKED";
+        throw error;
       }
     } else {
-      // Create new customer account with verified status
+      // Check if account already exists with this email
+      const existingByEmail = await prisma.customer.findUnique({
+        where: { email },
+      });
+
+      if (existingByEmail) {
+        // SECURITY: Do not silently link an existing password account solely because its email matches!
+        const error: any = new Error(
+          "An account with this email already exists. Please log in using your password."
+        );
+        error.code = "ACCOUNT_EXISTS_WITH_PASSWORD";
+        throw error;
+      }
+
+      // Create new customer tied strictly to googleId
       const randomPassword = crypto.randomUUID() + "-" + Date.now();
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
       const placeholderPhone = `g_${googleSub.slice(-8)}_${Math.floor(1000 + Math.random() * 9000)}`;
 
-      customer = await prisma.customer.create({
-        data: {
-          name,
-          email,
-          phone: placeholderPhone,
-          password: hashedPassword,
-          isVerified: true,
-          isBlocked: false,
-        },
-      });
+      try {
+        customer = await prisma.customer.create({
+          data: {
+            googleId: googleSub,
+            name,
+            email,
+            phone: placeholderPhone,
+            password: hashedPassword,
+            isVerified: true,
+            isBlocked: false,
+          },
+        });
+      } catch (err: any) {
+        // Handle concurrent account creation
+        if (err.code === "P2002") {
+          customer = await prisma.customer.findUnique({
+            where: { googleId: googleSub },
+          });
+          if (!customer) {
+            throw new Error("Account creation conflict occurred. Please try again.");
+          }
+        } else {
+          throw err;
+        }
+      }
     }
 
+    // 5. Generate standard customer session JWT
     const token = generateToken({
       id: customer.id,
       email: customer.email,

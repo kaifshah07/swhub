@@ -172,6 +172,7 @@ model OrderItem {
 
 model Customer {
   id           Int       @id @default(autoincrement())
+  googleId     String?   @unique
   name         String
   email        String    @unique
   phone        String    @unique
