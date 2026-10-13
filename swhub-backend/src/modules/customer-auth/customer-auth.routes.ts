@@ -11,6 +11,7 @@ import {
   loginCustomerSchema,
   verifyOtpSchema,
   resendOtpSchema,
+  googleAuthSchema,
 } from "./customer-auth.validation";
 
 import {
@@ -53,6 +54,15 @@ router.post(
   "/login",
   validateRequest(loginCustomerSchema),
   CustomerAuthController.login
+);
+
+
+// GOOGLE AUTH
+
+router.post(
+  "/google",
+  validateRequest(googleAuthSchema),
+  CustomerAuthController.google
 );
 
 

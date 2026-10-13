@@ -21,6 +21,7 @@ import {
   verifyCustomerOtp,
   resendCustomerOtp,
 } from "@/app/admin/services/api/customerAuth";
+import GoogleAuthButton from "./GoogleAuthButton";
 import toast from "react-hot-toast";
 
 export default function AuthModal() {
@@ -99,6 +100,7 @@ export default function AuthModal() {
   // Handle Login Submission
   async function handleLoginSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError("");
     setLoading(true);
 
@@ -110,7 +112,28 @@ export default function AuthModal() {
         setError(res.message || "Invalid email or password");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Failed to sign in. Please try again.");
+      const status = err?.response?.status;
+      const code = err?.response?.data?.code;
+      const backendMessage = err?.response?.data?.message;
+
+      if (code === "ACCOUNT_NOT_FOUND" || status === 404) {
+        setError("No account found for this email. Please create an account to continue.");
+      } else if (code === "UNVERIFIED_ACCOUNT" || status === 403) {
+        setError("Please verify your email before logging in.");
+        setOtpCustomerId(err?.response?.data?.customerId || null);
+        setOtpEmail(err?.response?.data?.email || loginForm.email);
+        setStep("otp");
+        setCountdown(60);
+        toast("Please enter your verification code to continue.", { icon: "ℹ️" });
+      } else if (code === "ACCOUNT_BLOCKED") {
+        setError("Your account has been blocked. Please contact support.");
+      } else if (status === 401 || code === "INVALID_CREDENTIALS") {
+        setError("Invalid email or password.");
+      } else if (!err?.response) {
+        setError("Unable to connect to the server. Please check your internet connection and try again.");
+      } else {
+        setError(backendMessage || "Failed to sign in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -119,20 +142,26 @@ export default function AuthModal() {
   // Handle Register Submission
   async function handleRegisterSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError("");
     setLoading(true);
 
-    if (registerForm.phone.length !== 10) {
+    if (registerForm.phone.replace(/\D/g, "").length !== 10) {
       setError("Please enter a valid 10-digit phone number");
       setLoading(false);
       return;
     }
 
     try {
-      const res = await registerCustomer(registerForm);
+      const res = await registerCustomer({
+        ...registerForm,
+        email: registerForm.email.toLowerCase().trim(),
+        phone: registerForm.phone.replace(/\D/g, "").slice(0, 10),
+      });
+
       if (res.success && res.data) {
-        setOtpCustomerId(res.data.customerId);
-        setOtpEmail(res.data.email || registerForm.email);
+        setOtpCustomerId(res.data.customerId || null);
+        setOtpEmail(res.data.email || registerForm.email.toLowerCase().trim());
         setStep("otp");
         setCountdown(60);
         toast.success("Verification code sent to your email!");
@@ -140,7 +169,11 @@ export default function AuthModal() {
         setError(res.message || "Registration failed");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Registration failed. Please try again.");
+      setError(
+        err?.response?.data?.message ||
+          err.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -149,6 +182,7 @@ export default function AuthModal() {
   // Handle OTP Verification
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     if (otpCode.length !== 6) {
       setError("Please enter the complete 6-digit code");
       return;
@@ -159,6 +193,7 @@ export default function AuthModal() {
 
     try {
       const res = await verifyCustomerOtp({
+        customerId: otpCustomerId || undefined,
         email: otpEmail,
         otp: otpCode,
       });
@@ -166,10 +201,14 @@ export default function AuthModal() {
       if (res.success && res.data) {
         handleAuthSuccess(res.data.token, res.data.customer);
       } else {
-        setError(res.message || "Invalid or expired OTP");
+        setError(res.message || "Invalid or expired verification code");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Verification failed");
+      setError(
+        err?.response?.data?.message ||
+          err.message ||
+          "Verification failed. Please check the code and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -177,20 +216,28 @@ export default function AuthModal() {
 
   // Resend OTP
   async function handleResendOtp() {
-    if (countdown > 0) return;
+    if (loading || countdown > 0) return;
     setError("");
     setLoading(true);
 
     try {
-      const res = await resendCustomerOtp(otpEmail);
+      const res = await resendCustomerOtp({
+        customerId: otpCustomerId || undefined,
+        email: otpEmail,
+      });
+
       if (res.success) {
         setCountdown(60);
-        toast.success("A fresh OTP has been sent to your email!");
+        toast.success("A fresh verification code has been sent to your email!");
       } else {
-        setError(res.message || "Failed to resend OTP");
+        setError(res.message || "Failed to resend verification code");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Failed to resend OTP");
+      setError(
+        err?.response?.data?.message ||
+          err.message ||
+          "Failed to resend verification code"
+      );
     } finally {
       setLoading(false);
     }
@@ -240,9 +287,23 @@ export default function AuthModal() {
 
         {/* ERROR MESSAGE */}
         {error && (
-          <div className="mx-8 mt-3 flex items-center gap-2 rounded-xl bg-red-600/10 p-3 text-xs font-medium text-red-600 border border-red-200">
-            <AlertCircle size={16} className="shrink-0 text-red-600" />
-            <span>{error}</span>
+          <div className="mx-8 mt-3 flex items-start gap-2 rounded-xl bg-red-600/10 p-3 text-xs font-medium text-red-600 border border-red-200">
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+            <div className="flex-1">
+              <span>{error}</span>
+              {error.includes("create an account") && tab === "login" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab("register");
+                    setError("");
+                  }}
+                  className="mt-1 block font-bold text-primary underline"
+                >
+                  Switch to Create Account →
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -250,7 +311,7 @@ export default function AuthModal() {
         {step === "auth" ? (
           <div className="p-8 pt-4">
             {/* TAB SELECTOR */}
-            <div className="flex rounded-2xl bg-slate-100 p-1 mb-6">
+            <div className="flex rounded-2xl bg-slate-100 p-1 mb-5">
               <button
                 type="button"
                 onClick={() => {
@@ -279,6 +340,22 @@ export default function AuthModal() {
               >
                 Create Account
               </button>
+            </div>
+
+            {/* GOOGLE SIGN IN */}
+            <div className="mb-4">
+              <GoogleAuthButton
+                text="Continue with Google"
+                onSuccess={(token, customer) => handleAuthSuccess(token, customer)}
+                onError={(err) => setError(err)}
+              />
+            </div>
+
+            <div className="relative mb-4 flex items-center justify-center">
+              <div className="w-full border-t border-slate-200" />
+              <span className="absolute bg-white px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                or with email
+              </span>
             </div>
 
             {/* TAB 1: LOGIN */}
@@ -338,7 +415,7 @@ export default function AuthModal() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-secondary to-primary py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-950/20 transition hover:opacity-95 active:scale-95 disabled:opacity-60"
+                  className="w-full mt-2 flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-md shadow-slate-900/10 transition hover:bg-slate-800 active:scale-95 disabled:opacity-60"
                 >
                   {loading ? (
                     "Signing In..."
@@ -464,13 +541,13 @@ export default function AuthModal() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-secondary to-primary py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-950/20 transition hover:opacity-95 active:scale-95 disabled:opacity-60"
+                  className="w-full mt-2 flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-md shadow-slate-900/10 transition hover:bg-slate-800 active:scale-95 disabled:opacity-60"
                 >
                   {loading ? (
-                    "Sending OTP..."
+                    "Sending Code..."
                   ) : (
                     <>
-                      <span>Continue with OTP</span>
+                      <span>Continue with Email Code</span>
                       <ArrowRight size={16} />
                     </>
                   )}
@@ -507,14 +584,14 @@ export default function AuthModal() {
                     setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
                   }
                   placeholder="000000"
-                  className="w-full rounded-2xl border-2 border-primary bg-slate-50/40 py-3 text-center text-2xl font-black tracking-[0.5em] text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/20"
+                  className="w-full rounded-2xl border-2 border-slate-200 bg-slate-50/40 py-3.5 text-center text-3xl font-black tracking-[0.5em] text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/20"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading || otpCode.length !== 6}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-secondary to-primary py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-950/20 transition hover:opacity-95 active:scale-95 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-md shadow-slate-900/10 transition hover:bg-slate-800 active:scale-95 disabled:opacity-50"
               >
                 {loading ? "Verifying..." : "Verify & Complete"}
               </button>
@@ -534,7 +611,7 @@ export default function AuthModal() {
                   className="inline-flex items-center gap-1 font-bold text-primary hover:underline"
                 >
                   <RotateCcw size={12} />
-                  Resend OTP Now
+                  Resend Code Now
                 </button>
               )}
             </div>
@@ -542,7 +619,10 @@ export default function AuthModal() {
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => setStep("auth")}
+                onClick={() => {
+                  setStep("auth");
+                  setError("");
+                }}
                 className="text-xs text-slate-400 hover:text-slate-600 hover:underline"
               >
                 ← Back to registration

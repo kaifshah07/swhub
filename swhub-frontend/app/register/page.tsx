@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { registerCustomer } from "../admin/services/api/customerAuth";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
@@ -41,12 +42,14 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
 
     try {
       setLoading(true);
       setError("");
 
-      if (form.phone.replace(/\D/g, "").length !== 10) {
+      const cleanPhone = form.phone.replace(/\D/g, "");
+      if (cleanPhone.length !== 10) {
         setError("Phone number must be exactly 10 digits");
         setLoading(false);
         return;
@@ -64,10 +67,12 @@ export default function RegisterPage() {
         return;
       }
 
+      const normalizedEmail = form.email.toLowerCase().trim();
+
       const result = await registerCustomer({
         name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
+        email: normalizedEmail,
+        phone: cleanPhone,
         password: form.password,
       });
 
@@ -76,10 +81,10 @@ export default function RegisterPage() {
       }
 
       if (result.data?.requiresVerification) {
-        toast.success("Verification OTP sent to your email!");
+        toast.success("Verification code sent to your email!");
         router.push(
-          `/verify-otp?customerId=${result.data.customerId}&email=${encodeURIComponent(
-            result.data.email
+          `/verify-otp?customerId=${result.data.customerId || ""}&email=${encodeURIComponent(
+            result.data.email || normalizedEmail
           )}`
         );
         return;
@@ -117,7 +122,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* BRAND BADGE */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl -blue- text-primary mb-3 shadow-sm border border-primary">
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-blue-50 text-primary mb-3 shadow-sm border border-primary/20">
             <ShoppingBag size={28} />
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -135,6 +140,31 @@ export default function RegisterPage() {
               {error}
             </div>
           )}
+
+          {/* GOOGLE SIGN UP */}
+          <div className="mb-5">
+            <GoogleAuthButton
+              text="Continue with Google"
+              onSuccess={(token, customer) => {
+                localStorage.setItem("customer_token", token);
+                if (customer) {
+                  localStorage.setItem("customer", JSON.stringify(customer));
+                }
+                window.dispatchEvent(new Event("userLoggedIn"));
+                window.dispatchEvent(new Event("storage"));
+                toast.success(`Welcome to SW Hub, ${customer?.name || "Shopper"}! 🎉`);
+                router.push("/");
+              }}
+              onError={(err) => setError(err)}
+            />
+          </div>
+
+          <div className="relative mb-5 flex items-center justify-center">
+            <div className="w-full border-t border-slate-200" />
+            <span className="absolute bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              or register with email
+            </span>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>

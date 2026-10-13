@@ -37,18 +37,35 @@ export const loginCustomerSchema = z.object({
 });
 
 export const verifyOtpSchema = z.object({
-  body: z.object({
-    customerId: z.coerce.number().int().positive(),
-
-    otp: z
-      .string()
-      .trim()
-      .length(6, "OTP must be 6 digits"),
-  }),
+  body: z
+    .object({
+      customerId: z.coerce.number().int().positive().optional(),
+      email: z.string().trim().email("Invalid email format").optional(),
+      otp: z
+        .string()
+        .trim()
+        .length(6, "OTP must be 6 digits"),
+    })
+    .refine((data) => data.customerId !== undefined || (data.email !== undefined && data.email.length > 0), {
+      message: "Customer ID or email is required",
+      path: ["customerId"],
+    }),
 });
 
 export const resendOtpSchema = z.object({
+  body: z
+    .object({
+      customerId: z.coerce.number().int().positive().optional(),
+      email: z.string().trim().email("Invalid email format").optional(),
+    })
+    .refine((data) => data.customerId !== undefined || (data.email !== undefined && data.email.length > 0), {
+      message: "Customer ID or email is required",
+      path: ["customerId"],
+    }),
+});
+
+export const googleAuthSchema = z.object({
   body: z.object({
-    customerId: z.coerce.number().int().positive(),
+    idToken: z.string().trim().min(1, "Google ID token is required"),
   }),
 });

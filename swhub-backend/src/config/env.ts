@@ -34,4 +34,5 @@ export const env = {
 
   VENDOR_ENQUIRY_RECEIVER_EMAIL:
     process.env.VENDOR_ENQUIRY_RECEIVER_EMAIL || "",
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
 };

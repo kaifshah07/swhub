@@ -10,8 +10,8 @@ function VerifyOtpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const customerId = searchParams.get("customerId");
-  const email = searchParams.get("email") || "your email address";
+  const customerIdParam = searchParams.get("customerId");
+  const emailParam = searchParams.get("email");
 
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,15 @@ function VerifyOtpContent() {
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(60);
 
+  const displayEmail = emailParam || "your email address";
+
   useEffect(() => {
-    if (!customerId) {
+    const hasIdentifier = Boolean(
+      (customerIdParam && customerIdParam.trim() !== "") ||
+      (emailParam && emailParam.includes("@"))
+    );
+
+    if (!hasIdentifier) {
       toast.error("Invalid verification session. Please register first.");
       router.push("/register");
       return;
@@ -31,12 +38,13 @@ function VerifyOtpContent() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [customerId, router]);
+  }, [customerIdParam, emailParam, router]);
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
 
-    if (!customerId || otp.length !== 6) {
+    if (otp.length !== 6) {
       setError("Please enter the complete 6-digit verification code");
       return;
     }
@@ -45,7 +53,11 @@ function VerifyOtpContent() {
       setLoading(true);
       setError("");
 
-      const result = await verifyCustomerOtp(Number(customerId), otp);
+      const result = await verifyCustomerOtp({
+        customerId: customerIdParam ? Number(customerIdParam) : undefined,
+        email: emailParam ? emailParam.trim() : undefined,
+        otp,
+      });
 
       if (!result.success || !result.data?.token) {
         throw new Error(result.message || "OTP verification failed");
@@ -72,36 +84,44 @@ function VerifyOtpContent() {
         router.push("/");
       }
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          "Invalid verification code. Please try again."
-      );
+      const backendMsg = err?.response?.data?.message || err?.message;
+      if (backendMsg?.toLowerCase().includes("expired")) {
+        setError("This verification code has expired. Please request a new code below.");
+      } else if (backendMsg?.toLowerCase().includes("invalid")) {
+        setError("Invalid verification code. Please check your email and try again.");
+      } else if (!err?.response) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError(backendMsg || "Invalid verification code. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   }
 
   async function handleResend() {
-    if (!customerId || countdown > 0) return;
+    if (resending || countdown > 0) return;
 
     try {
       setResending(true);
       setError("");
 
-      const result = await resendCustomerOtp(Number(customerId));
+      const result = await resendCustomerOtp({
+        customerId: customerIdParam ? Number(customerIdParam) : undefined,
+        email: emailParam ? emailParam.trim() : undefined,
+      });
 
       if (!result.success) {
         throw new Error(result.message || "Failed to resend code");
       }
 
       setCountdown(60);
-      toast.success("A new verification code has been sent!");
+      toast.success("A fresh verification code has been sent to your email!");
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          "Unable to resend OTP right now."
+          "Unable to resend OTP right now. Please try again in a moment."
       );
     } finally {
       setResending(false);
@@ -113,14 +133,14 @@ function VerifyOtpContent() {
       <div className="w-full max-w-md">
         {/* BRAND BADGE */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl -blue- text-primary mb-3 shadow-sm border border-primary">
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-blue-50 text-primary mb-3 shadow-sm border border-primary/20">
             <Mail size={28} />
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">
             Verify Your Email
           </h1>
           <p className="mt-1 text-xs text-slate-500">
-            We sent a 6-digit code to <strong className="text-slate-800">{email}</strong>
+            We sent a 6-digit code to <strong className="text-slate-800">{displayEmail}</strong>
           </p>
         </div>
 

@@ -23,16 +23,41 @@ export const registerCustomer = async (customerData) => {
 // =========================
 
 export const verifyCustomerOtp = async (
-  customerId,
-  otp
+  identifierOrData,
+  otpCode
 ) => {
   try {
+    let payload = {};
+
+    if (typeof identifierOrData === "object" && identifierOrData !== null) {
+      payload = {
+        customerId: identifierOrData.customerId ? Number(identifierOrData.customerId) : undefined,
+        email: identifierOrData.email ? String(identifierOrData.email).trim() : undefined,
+        otp: String(identifierOrData.otp || otpCode || "").trim(),
+      };
+    } else if (typeof identifierOrData === "number" || (!isNaN(Number(identifierOrData)) && String(identifierOrData).length < 10 && !String(identifierOrData).includes("@"))) {
+      payload = {
+        customerId: Number(identifierOrData),
+        otp: String(otpCode || "").trim(),
+      };
+    } else if (typeof identifierOrData === "string" && identifierOrData.includes("@")) {
+      payload = {
+        email: identifierOrData.trim(),
+        otp: String(otpCode || "").trim(),
+      };
+    } else {
+      payload = {
+        customerId: identifierOrData,
+        otp: String(otpCode || "").trim(),
+      };
+    }
+
+    // Clean undefined keys
+    Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+
     const { data } = await api.post(
       "/auth/customer/verify-otp",
-      {
-        customerId,
-        otp,
-      }
+      payload
     );
 
     return data;
@@ -47,14 +72,35 @@ export const verifyCustomerOtp = async (
 // =========================
 
 export const resendCustomerOtp = async (
-  customerId
+  identifierOrData
 ) => {
   try {
+    let payload = {};
+
+    if (typeof identifierOrData === "object" && identifierOrData !== null) {
+      payload = {
+        customerId: identifierOrData.customerId ? Number(identifierOrData.customerId) : undefined,
+        email: identifierOrData.email ? String(identifierOrData.email).trim() : undefined,
+      };
+    } else if (typeof identifierOrData === "number" || (!isNaN(Number(identifierOrData)) && String(identifierOrData).length < 10 && !String(identifierOrData).includes("@"))) {
+      payload = {
+        customerId: Number(identifierOrData),
+      };
+    } else if (typeof identifierOrData === "string" && identifierOrData.includes("@")) {
+      payload = {
+        email: identifierOrData.trim(),
+      };
+    } else {
+      payload = {
+        customerId: identifierOrData,
+      };
+    }
+
+    Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+
     const { data } = await api.post(
       "/auth/customer/resend-otp",
-      {
-        customerId,
-      }
+      payload
     );
 
     return data;
@@ -75,6 +121,24 @@ export const loginCustomer = async (
     const { data } = await api.post(
       "/auth/customer/login",
       loginData
+    );
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+// =========================
+// GOOGLE AUTH
+// =========================
+
+export const googleAuthCustomer = async (idToken) => {
+  try {
+    const { data } = await api.post(
+      "/auth/customer/google",
+      { idToken }
     );
 
     return data;
