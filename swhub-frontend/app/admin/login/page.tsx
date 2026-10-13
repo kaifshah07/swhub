@@ -23,8 +23,9 @@ export default function AdminLoginPage() {
       await login(username, password);
 
       router.push("/admin");
-    } catch (err) {
-      setError("Invalid username or password");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Invalid username or password";
+      setError(msg);
     } finally {
       setLoading(false);
     }

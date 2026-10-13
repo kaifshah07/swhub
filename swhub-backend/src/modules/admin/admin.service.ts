@@ -4,8 +4,14 @@ import { generateToken } from "../../config/jwt";
 
 export class AdminService {
   static async login(username: string, password: string) {
-    const admin = await prisma.admin.findUnique({
-      where: { username },
+    const searchKey = (username || "").trim();
+    const admin = await prisma.admin.findFirst({
+      where: {
+        OR: [
+          { username: { equals: searchKey, mode: "insensitive" } },
+          { email: { equals: searchKey, mode: "insensitive" } },
+        ],
+      },
     });
 
     if (!admin) {
