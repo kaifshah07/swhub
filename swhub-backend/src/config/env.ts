@@ -27,6 +27,7 @@ export const env = {
 
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || "",
+  RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET || "",
 
   BREVO_API_KEY: process.env.BREVO_API_KEY || "",
   BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || "",
@@ -34,5 +35,10 @@ export const env = {
 
   VENDOR_ENQUIRY_RECEIVER_EMAIL:
     process.env.VENDOR_ENQUIRY_RECEIVER_EMAIL || "",
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+  GOOGLE_CLIENT_ID: (process.env.GOOGLE_CLIENT_ID || "")
+    .replace(/[\r\n\s]+/g, "")
+    .trim(),
+  GOOGLE_CLIENT_SECRET: (process.env.GOOGLE_CLIENT_SECRET || "")
+    .replace(/[\r\n\s]+/g, "")
+    .trim(),
 };

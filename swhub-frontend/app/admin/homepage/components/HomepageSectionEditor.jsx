@@ -126,7 +126,7 @@ export default function HomepageSectionEditor({
 
         <button
           onClick={handleSave}
-          className="bg-orange-500 text-white px-6 py-3 rounded-lg"
+          className="bg-[#0000FF] hover:bg-[#0059FF] text-white px-6 py-3 rounded-lg font-semibold transition"
         >
           Save Section
         </button>

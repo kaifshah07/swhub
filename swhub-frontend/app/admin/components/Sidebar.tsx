@@ -131,13 +131,13 @@ export default function Sidebar({
       {/* BRAND HEADER */}
       <div className="flex h-16 items-center justify-between border-b border-slate-800/80 px-6">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#0EA5E9] to-[#0EA5E9] text-white shadow-lg shadow-emerald-950/25">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#0000FF] to-[#0059FF] text-white shadow-lg shadow-[#0000FF]/25">
             <span className="text-base font-black">SW</span>
           </div>
           <div>
             <h1 className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
               <span>SW Hub</span>
-              <span className="text-[10px] font-bold text-[#0EA5E9] bg-[#0EA5E9]/60 border border-[#0EA5E9]/30 px-1.5 py-0.2 rounded-full">
+              <span className="text-[10px] font-bold text-white bg-[#0000FF] border border-[#0059FF]/50 px-1.5 py-0.2 rounded-full">
                 ADMIN
               </span>
             </h1>
@@ -175,7 +175,7 @@ export default function Sidebar({
                     onClick={onCloseMobile}
                     className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
                       active
-                        ? "bg-gradient-to-r from-accent to-accent text-white font-bold shadow-md shadow-orange-500/20"
+                        ? "bg-gradient-to-r from-[#0000FF] to-[#0059FF] text-white font-bold shadow-md shadow-[#0000FF]/25"
                         : "text-slate-400 hover:bg-slate-800/80 hover:text-slate-100"
                     }`}
                   >

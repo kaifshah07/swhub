@@ -33,6 +33,13 @@ router.get(
   OrderController.getMyOrderById
 );
 
+// Customer cancel pending order
+router.patch(
+  "/my-orders/:id/cancel",
+  authenticateCustomer,
+  OrderController.cancelCustomerOrder
+);
+
 // =========================
 // ADMIN ROUTES
 // =========================

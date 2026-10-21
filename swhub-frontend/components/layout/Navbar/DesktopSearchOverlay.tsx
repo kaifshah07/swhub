@@ -115,6 +115,7 @@ export default function DesktopSearchOverlay({ isOpen, onClose }: DesktopSearchO
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close search"
             className="rounded-full bg-neutral-100 p-2.5 text-slate-500 transition-colors hover:bg-neutral-200 hover:text-slate-900"
           >
             <X size={20} />

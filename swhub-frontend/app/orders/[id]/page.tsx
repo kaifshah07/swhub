@@ -3,8 +3,20 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Package, MapPin, Receipt, CheckCircle2, Circle } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  MapPin,
+  Receipt,
+  CheckCircle2,
+  Circle,
+  CreditCard,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { API_URL } from "@/lib/api";
+import toast from "react-hot-toast";
+import loadRazorpay from "@/lib/loadRazorpay";
 
 type Product = {
   id: number;
@@ -35,7 +47,7 @@ type Order = {
 const statusSteps = [
   "PENDING",
   "CONFIRMED",
-  "PROCESSING",
+  "PACKED",
   "SHIPPED",
   "DELIVERED",
 ];
@@ -46,6 +58,7 @@ export default function OrderDetailsPage() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -91,6 +104,131 @@ export default function OrderDetailsPage() {
     }
   }
 
+  async function handleRetryPayment() {
+    if (!order) return;
+    const token = localStorage.getItem("customer_token");
+    if (!token) {
+      toast.error("Please login to proceed with payment");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+
+      const isLoaded = await loadRazorpay();
+      if (!isLoaded) {
+        throw new Error("Unable to load Razorpay checkout SDK. Please check your internet connection.");
+      }
+
+      const res = await fetch(`${API_URL}/payments/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to initialize payment");
+      }
+
+      const { paymentId, razorpayOrderId, amount, currency, key } = json.data;
+
+      const options = {
+        key,
+        amount,
+        currency: currency || "INR",
+        name: "SW Hub",
+        description: `Order #${order.orderNumber}`,
+        order_id: razorpayOrderId,
+        theme: {
+          color: "#0EA5E9",
+        },
+        handler: async function (response: any) {
+          try {
+            toast.loading("Verifying payment...", { id: "verify-toast" });
+
+            const verifyRes = await fetch(`${API_URL}/payments/verify`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                paymentId,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyJson = await verifyRes.json();
+            toast.dismiss("verify-toast");
+
+            if (verifyJson.success) {
+              toast.success("Payment verified! Order confirmed! 🎉");
+              loadOrder();
+            } else {
+              toast.error(verifyJson.message || "Payment verification failed");
+              loadOrder();
+            }
+          } catch (err: any) {
+            toast.dismiss("verify-toast");
+            toast.error(err.message || "Verification error");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast("Payment window closed.", { icon: "ℹ️" });
+          },
+        },
+      };
+
+      const razorpayInstance = new (window as any).Razorpay(options);
+      razorpayInstance.open();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initiate payment retry");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleCancelOrder() {
+    if (!order) return;
+    if (!confirm("Are you sure you want to cancel this order? Reserved items will be restored to inventory.")) {
+      return;
+    }
+
+    const token = localStorage.getItem("customer_token");
+    if (!token) return;
+
+    try {
+      setActionLoading(true);
+      const res = await fetch(`${API_URL}/orders/my-orders/${order.id}/cancel`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to cancel order");
+      }
+
+      toast.success("Order cancelled successfully");
+      loadOrder();
+    } catch (err: any) {
+      toast.error(err.message || "Unable to cancel order");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   function formatDateTime(date: string) {
     return new Date(date).toLocaleString("en-IN", {
       day: "2-digit",
@@ -104,17 +242,17 @@ export default function OrderDetailsPage() {
   function getStatusStyle(status: string) {
     switch (status) {
       case "DELIVERED":
-        return "-blue- text-primary border-primary";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "CANCELLED":
-        return "bg-red-600/20 text-red-600 border-red-200";
+        return "bg-red-50 text-red-600 border-red-200";
       case "SHIPPED":
-        return "-sky- -sky- -sky-";
+        return "bg-purple-50 text-purple-700 border-purple-200";
+      case "PACKED":
+        return "bg-cyan-50 text-cyan-700 border-cyan-200";
       case "CONFIRMED":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      case "PROCESSING":
-        return "bg-amber-50 text-slate-600 border-primary";
+        return "bg-blue-50 text-blue-700 border-blue-200";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-amber-50 text-amber-700 border-amber-200";
     }
   }
 
@@ -136,9 +274,12 @@ export default function OrderDetailsPage() {
       <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 px-4">
         <div className="rounded-3xl bg-white p-10 text-center shadow-sm border border-black/5 max-w-md w-full">
           <div className="text-5xl mb-4">📦</div>
-          <h1 className="text-2xl font-bold text-slate-600">Order not found</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Order not found</h1>
           <p className="mt-2 text-slate-500">{error || "We couldn't find this order."}</p>
-          <Link href="/orders" className="mt-6 inline-flex rounded-xl bg-primary px-6 py-3 font-bold text-white transition hover:bg-primary">
+          <Link
+            href="/orders"
+            className="mt-6 inline-flex rounded-xl bg-orange-600 px-6 py-3 font-bold text-white transition hover:bg-orange-700"
+          >
             Back to Orders
           </Link>
         </div>
@@ -147,140 +288,248 @@ export default function OrderDetailsPage() {
   }
 
   const currentStep = getCurrentStep();
+  const isOnlinePending =
+    order.paymentMethod === "ONLINE" &&
+    order.paymentStatus === "PENDING" &&
+    order.orderStatus !== "CANCELLED";
+  const canCancel = order.orderStatus === "PENDING";
 
   return (
-    <div className="min-h-[80vh] bg-slate-50 px-4 py-10">
+    <div className="min-h-[80vh] bg-slate-50 px-4 py-10 font-sans">
       <div className="mx-auto max-w-4xl">
-        <Link href="/orders" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-600">
+        <Link
+          href="/orders"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-800"
+        >
           <ArrowLeft size={16} /> Back to Orders
         </Link>
 
+        {/* PENDING PAYMENT ALERT STRIP */}
+        {isOnlinePending && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-bold text-amber-900 text-sm">Payment Pending</h3>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Complete your online payment to confirm this order and dispatch items.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleRetryPayment}
+              disabled={actionLoading}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 hover:bg-orange-700 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition shrink-0 disabled:opacity-50"
+            >
+              <CreditCard size={15} />
+              <span>{actionLoading ? "Processing..." : "Complete Payment Now"}</span>
+            </button>
+          </div>
+        )}
+
         {/* Header */}
-        <div className="mb-8 rounded-3xl bg-white p-8 shadow-sm border border-black/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="mb-8 rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-600">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
               Order #{order.orderNumber}
             </h1>
-            <p className="mt-2 text-sm text-slate-500 font-medium">
+            <p className="mt-1 text-xs text-slate-500 font-medium">
               Placed on {formatDateTime(order.createdAt)}
             </p>
           </div>
-          <div className="flex gap-3 items-center">
-             <span className={`px-4 py-2 text-xs font-extrabold uppercase tracking-wide rounded-xl border ${getStatusStyle(order.orderStatus)}`}>
-                {order.orderStatus.replace('_', ' ')}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl border ${getStatusStyle(
+                order.orderStatus
+              )}`}
+            >
+              {order.orderStatus}
             </span>
+
+            {canCancel && (
+              <button
+                onClick={handleCancelOrder}
+                disabled={actionLoading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition disabled:opacity-50"
+              >
+                <XCircle size={14} />
+                <span>Cancel Order</span>
+              </button>
+            )}
           </div>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
-            {/* Tracking and Items (Left Column) */}
-            <div className="md:col-span-2 space-y-8">
-                {/* Tracking Tracker */}
-                <div className="rounded-3xl bg-white p-8 shadow-sm border border-black/5">
-                    <h2 className="text-xl font-bold text-slate-600 mb-8">Order Tracking</h2>
-                    {order.orderStatus === "CANCELLED" ? (
-                        <div className="rounded-2xl bg-red-600/10 p-6 text-red-600 border border-red-200">
-                            <p className="font-bold text-lg mb-2">Order Cancelled</p>
-                            <p className="text-sm">This order has been cancelled and will not be delivered.</p>
-                        </div>
-                    ) : (
-                        <div className="relative pl-4 border-l-2 border-slate-100 space-y-8 ml-2">
-                            {statusSteps.map((status, idx) => {
-                                const completed = idx <= currentStep;
-                                const isLast = idx === statusSteps.length - 1;
-                                const isCurrent = idx === currentStep;
-
-                                return (
-                                    <div key={status} className="relative">
-                                        <div className={`absolute -left-[25px] flex h-6 w-6 items-center justify-center rounded-full bg-white ring-4 ring-white`}>
-                                            {completed ? (
-                                                <CheckCircle2 className="w-6 h-6 text-primary" fill="currentColor" stroke="white" />
-                                            ) : (
-                                                <Circle className="w-4 h-4 text-slate-300 fill-white" />
-                                            )}
-                                        </div>
-                                        <div className="pl-4">
-                                            <h3 className={`font-bold text-sm ${completed ? "text-slate-600" : "text-slate-400"}`}>
-                                                {status.replace('_', ' ')}
-                                            </h3>
-                                            {isCurrent && <p className="text-xs text-slate-500 font-medium mt-1">We are currently processing this step.</p>}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )}
+          {/* Tracking and Items (Left Column) */}
+          <div className="md:col-span-2 space-y-8">
+            {/* Tracking Tracker */}
+            <div className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80">
+              <h2 className="text-lg font-black text-slate-900 mb-6">Order Tracking</h2>
+              {order.orderStatus === "CANCELLED" ? (
+                <div className="rounded-2xl bg-red-50 p-5 text-red-700 border border-red-200">
+                  <p className="font-bold text-sm mb-1">Order Cancelled</p>
+                  <p className="text-xs text-red-600">
+                    This order has been cancelled and will not be delivered. Reserved stock was restored.
+                  </p>
                 </div>
+              ) : (
+                <div className="relative pl-4 border-l-2 border-slate-100 space-y-6 ml-2">
+                  {statusSteps.map((status, idx) => {
+                    const completed = idx <= currentStep;
+                    const isCurrent = idx === currentStep;
 
-                {/* Items */}
-                <div className="rounded-3xl bg-white p-8 shadow-sm border border-black/5">
-                    <h2 className="text-xl font-bold text-slate-600 mb-6 flex items-center gap-2">
-                        <Package className="w-5 h-5 text-slate-600" /> Items in this Order
-                    </h2>
-                    <div className="divide-y divide-gray-100">
-                        {order.items.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between gap-5 py-5 first:pt-0 last:pb-0">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-16 w-16 flex-shrink-0 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden">
-                                        {item.product?.thumbnail ? (
-                                            <img src={item.product.thumbnail} alt={item.product.name} className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="h-full w-full flex items-center justify-center text-slate-300">
-                                                <Package size={20} />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <Link href={`/products/${item.productId}`} className="font-bold text-slate-600 hover:text-slate-600 transition line-clamp-1">
-                                            {item.product?.name || `Product #${item.productId}`}
-                                        </Link>
-                                        <p className="mt-1 text-sm text-slate-500 font-medium">Qty: {item.quantity} × ₹{Number(item.price).toFixed(2)}</p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-extrabold text-slate-600">₹{(Number(item.price) * item.quantity).toFixed(2)}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    return (
+                      <div key={status} className="relative">
+                        <div className="absolute -left-[25px] flex h-6 w-6 items-center justify-center rounded-full bg-white ring-4 ring-white">
+                          {completed ? (
+                            <CheckCircle2
+                              className="w-6 h-6 text-emerald-600"
+                              fill="currentColor"
+                              stroke="white"
+                            />
+                          ) : (
+                            <Circle className="w-4 h-4 text-slate-300 fill-white" />
+                          )}
+                        </div>
+                        <div className="pl-4">
+                          <h3
+                            className={`font-bold text-xs uppercase tracking-wider ${
+                              completed ? "text-slate-900" : "text-slate-400"
+                            }`}
+                          >
+                            {status}
+                          </h3>
+                          {isCurrent && (
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                              {status === "PENDING"
+                                ? "Awaiting confirmation and payment verification."
+                                : status === "CONFIRMED"
+                                ? "Order verified and sent to warehouse."
+                                : status === "PACKED"
+                                ? "Items securely packed and prepared for pickup."
+                                : status === "SHIPPED"
+                                ? "Package in transit with delivery partner."
+                                : "Order safely delivered to your doorstep."}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              )}
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-8">
-                {/* Summary */}
-                <div className="rounded-3xl bg-white p-8 shadow-sm border border-black/5">
-                    <h2 className="text-xl font-bold text-slate-600 mb-6 flex items-center gap-2">
-                        <Receipt className="w-5 h-5 text-slate-600" /> Payment Summary
-                    </h2>
-                    <div className="space-y-4 text-sm font-medium text-slate-500">
-                        <div className="flex justify-between">
-                            <span>Payment Method</span>
-                            <span className="text-slate-600">{order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Payment Status</span>
-                            <span className="text-slate-600">{order.paymentStatus}</span>
-                        </div>
-                        <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                            <span className="font-bold text-slate-600 text-base">Total Amount</span>
-                            <span className="text-2xl font-extrabold text-slate-600">₹{Number(order.totalAmount).toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Address */}
-                <div className="rounded-3xl bg-white p-8 shadow-sm border border-black/5">
-                    <h2 className="text-xl font-bold text-slate-600 mb-4 flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-slate-600" /> Shipping Address
-                    </h2>
-                    <div className="rounded-2xl bg-slate-50 p-5 border border-slate-100">
-                        <p className="whitespace-pre-line text-sm font-medium leading-relaxed text-slate-600">
-                            {order.address}
+            {/* Items */}
+            <div className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80">
+              <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+                <Package className="w-5 h-5 text-slate-700" />
+                <span>Items in this Order ({order.items.length})</span>
+              </h2>
+              <div className="divide-y divide-slate-100">
+                {order.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-5 py-4 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-14 w-14 flex-shrink-0 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center">
+                        {item.product?.thumbnail ? (
+                          <img
+                            src={item.product.thumbnail}
+                            alt={item.product.name}
+                            className="h-full w-full object-contain p-1"
+                          />
+                        ) : (
+                          <Package size={20} className="text-slate-300" />
+                        )}
+                      </div>
+                      <div>
+                        <Link
+                          href={`/products/${item.productId}`}
+                          className="font-bold text-xs text-slate-800 hover:text-orange-600 transition line-clamp-1"
+                        >
+                          {item.product?.name || `Product #${item.productId}`}
+                        </Link>
+                        <p className="mt-0.5 text-[11px] text-slate-500 font-medium">
+                          Qty: <strong className="text-slate-700">{item.quantity}</strong> × ₹
+                          {Number(item.price).toFixed(2)}
                         </p>
+                      </div>
                     </div>
-                </div>
+                    <div className="text-right">
+                      <p className="font-black text-xs text-slate-900">
+                        ₹{(Number(item.price) * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Payment Summary */}
+            <div className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80">
+              <h2 className="text-lg font-black text-slate-900 mb-5 flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-slate-700" /> Payment Summary
+              </h2>
+              <div className="space-y-3 text-xs font-medium text-slate-500">
+                <div className="flex justify-between">
+                  <span>Payment Method</span>
+                  <span className="font-bold text-slate-900">
+                    {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment (Razorpay)"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Payment Status</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                      order.paymentStatus === "PAID"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : order.paymentStatus === "REFUNDED"
+                        ? "bg-purple-50 text-purple-700"
+                        : order.paymentStatus === "FAILED"
+                        ? "bg-red-50 text-red-600"
+                        : "bg-amber-50 text-amber-700"
+                    }`}
+                  >
+                    {order.paymentStatus}
+                  </span>
+                </div>
+                <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
+                  <span className="font-bold text-slate-900 text-sm">Grand Total</span>
+                  <span className="text-xl font-black text-slate-900">
+                    ₹{Number(order.totalAmount).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {isOnlinePending && (
+                <button
+                  onClick={handleRetryPayment}
+                  disabled={actionLoading}
+                  className="mt-6 w-full flex items-center justify-center gap-2 rounded-2xl bg-orange-600 hover:bg-orange-700 py-3 text-xs font-bold text-white shadow-sm transition disabled:opacity-50"
+                >
+                  <CreditCard size={15} />
+                  <span>{actionLoading ? "Processing..." : "Pay Now"}</span>
+                </button>
+              )}
+            </div>
+
+            {/* Shipping Address */}
+            <div className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80">
+              <h2 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-slate-700" /> Shipping Address
+              </h2>
+              <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                <p className="whitespace-pre-line text-xs font-medium leading-relaxed text-slate-700">
+                  {order.address}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

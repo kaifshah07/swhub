@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { API_URL } from "@/lib/api";
+import { API_URL, fetchWithTimeout } from "@/lib/api";
 import { Flame, Sparkles, Tag, ShoppingCart, ChevronDown } from "lucide-react";
 
 type Category = {
@@ -28,7 +28,7 @@ export default function MegaMenu() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await fetch(`${API_URL}/categories`);
+        const res = await fetchWithTimeout(`${API_URL}/categories`, {}, 5000);
         const data = await res.json();
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
           setCategories(data.data);

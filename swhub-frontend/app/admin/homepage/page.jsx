@@ -36,7 +36,7 @@ const sections = [
     href: "/admin/homepage/brands",
   },
   {
-    title: "Character Zone",
+    title: "Household Aisles",
     href: "/admin/homepage/character-zone",
   },
   {

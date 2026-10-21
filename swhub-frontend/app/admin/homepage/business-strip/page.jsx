@@ -69,7 +69,7 @@ export default function BusinessStripAdmin() {
             Vendor Enquiries CTA
           </h3>
           <p className="mt-1 text-xs text-gray-500">
-            Routes prospective kid brands and merchants to /become-a-vendor.
+            Routes prospective suppliers, manufacturers, and FMCG distributors to /become-a-vendor.
           </p>
 
           <div className="mt-6 rounded-2xl bg-blue-50/50 p-4 border border-blue-100 flex items-baseline justify-between">

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import toast from "react-hot-toast";
-import { openCustomerAuthModal } from "@/lib/authModal";
+import { openCustomerAuthModal, isTokenExpired, clearCustomerSession } from "@/lib/authModal";
 
 type CartItem = {
   productId: number;
@@ -98,7 +98,8 @@ export default function CheckoutPage() {
 
   function checkAuthAndLoad() {
     const token = localStorage.getItem("customer_token");
-    if (!token) {
+    if (!token || isTokenExpired(token)) {
+      clearCustomerSession();
       setIsAuthenticated(false);
       openCustomerAuthModal({
         defaultTab: "login",
@@ -121,15 +122,44 @@ export default function CheckoutPage() {
         },
       });
 
+      if (response.status === 401) {
+        clearCustomerSession();
+        setIsAuthenticated(false);
+        openCustomerAuthModal({
+          defaultTab: "login",
+          message: "Your session has expired. Please sign in to continue checkout.",
+          onSuccess: () => {
+            checkAuthAndLoad();
+          },
+        });
+        return;
+      }
+
       const result = await response.json();
+      if (!response.ok || !result.success) {
+        if (result.message && /token|expired|unauthorized/i.test(result.message)) {
+          clearCustomerSession();
+          setIsAuthenticated(false);
+          openCustomerAuthModal({
+            defaultTab: "login",
+            message: "Your session has expired. Please sign in to continue checkout.",
+            onSuccess: () => {
+              checkAuthAndLoad();
+            },
+          });
+          return;
+        }
+      }
+
       const customer = result.data?.customer || result.data;
 
       if (customer) {
+        const hasRealPhone = customer.phone && !customer.phone.startsWith("g_");
         setForm((prev) => ({
           ...prev,
           name: customer.name || prev.name,
           email: customer.email || prev.email,
-          phone: customer.phone || prev.phone,
+          phone: hasRealPhone ? customer.phone : prev.phone,
         }));
       }
     } catch (error) {
@@ -200,6 +230,7 @@ export default function CheckoutPage() {
   }
 
   async function placeOrder() {
+    if (loading) return;
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
       toast.error("Please fill in your contact details");
       return;
@@ -216,10 +247,12 @@ export default function CheckoutPage() {
     }
 
     const token = localStorage.getItem("customer_token");
-    if (!token) {
+    if (!token || isTokenExpired(token)) {
+      clearCustomerSession();
+      setIsAuthenticated(false);
       openCustomerAuthModal({
         defaultTab: "login",
-        message: "Please sign in or register to place your order.",
+        message: "Your session has expired. Please sign in or register to place your order.",
         onSuccess: () => {
           checkAuthAndLoad();
         },
@@ -252,7 +285,27 @@ export default function CheckoutPage() {
         }),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
+
+      // Check if session expired or unauthorized
+      if (
+        response.status === 401 ||
+        (result.message && /token|expired|unauthorized/i.test(result.message))
+      ) {
+        clearCustomerSession();
+        setIsAuthenticated(false);
+        toast.error("Your session has expired. Please sign in again.");
+        openCustomerAuthModal({
+          defaultTab: "login",
+          message: "Your session has expired. Please sign in to complete your order.",
+          onSuccess: () => {
+            checkAuthAndLoad();
+            toast.success("Signed in! You can now place your order.");
+          },
+        });
+        return;
+      }
+
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Unable to place order");
       }
@@ -284,7 +337,25 @@ export default function CheckoutPage() {
         body: JSON.stringify({ orderId }),
       });
 
-      const paymentJson = await paymentRes.json();
+      const paymentJson = await paymentRes.json().catch(() => ({}));
+
+      if (
+        paymentRes.status === 401 ||
+        (paymentJson.message && /token|expired|unauthorized/i.test(paymentJson.message))
+      ) {
+        clearCustomerSession();
+        setIsAuthenticated(false);
+        toast.error("Your session has expired. Please sign in again.");
+        openCustomerAuthModal({
+          defaultTab: "login",
+          message: "Your session has expired. Please sign in to continue payment.",
+          onSuccess: () => {
+            checkAuthAndLoad();
+          },
+        });
+        return;
+      }
+
       if (!paymentRes.ok || !paymentJson.success) {
         throw new Error(paymentJson.message || "Failed to initialize online payment");
       }
@@ -354,11 +425,21 @@ export default function CheckoutPage() {
       const razorpayInstance = new (window as any).Razorpay(options);
       razorpayInstance.open();
     } catch (error: any) {
-      console.error(error);
-      if (error.message && error.message.includes("not found")) {
+      if (error?.message && /token|expired|unauthorized/i.test(error.message)) {
+        clearCustomerSession();
+        setIsAuthenticated(false);
+        toast.error("Your session has expired. Please sign in again.");
+        openCustomerAuthModal({
+          defaultTab: "login",
+          message: "Your session has expired. Please sign in to place your order.",
+          onSuccess: () => {
+            checkAuthAndLoad();
+          },
+        });
+      } else if (error?.message && error.message.includes("not found")) {
         toast.error("A product in your cart is no longer available. Please clear your cart and add items again.", { duration: 5000 });
       } else {
-        toast.error(error.message || "Order placement failed");
+        toast.error(error?.message || "Order placement failed");
       }
     } finally {
       setLoading(false);

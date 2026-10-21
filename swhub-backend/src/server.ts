@@ -11,7 +11,7 @@ const startServer = async () => {
   app.listen(env.PORT, () => {
     console.log(`
 ====================================
-🚀 Balmitra Backend Started
+🚀 SW Hub Backend Started
 🌐 Port : ${env.PORT}
 🌍 Mode : ${env.NODE_ENV}
 ====================================

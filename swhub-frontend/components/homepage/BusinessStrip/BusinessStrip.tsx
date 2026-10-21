@@ -41,11 +41,12 @@ export default function BusinessSection() {
             </div>
 
             <div className="mt-8">
-              <Link href="/become-a-vendor">
-                <button className="inline-flex items-center gap-2 rounded-xl bg-primary text-white px-6 py-3 font-bold text-sm shadow hover:bg-primary transition">
-                  <span>Register as Vendor</span>
-                  <ArrowRight size={16} />
-                </button>
+              <Link
+                href="/become-a-vendor"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary text-white px-6 py-3 font-bold text-sm shadow hover:bg-primary transition"
+              >
+                <span>Register as Vendor</span>
+                <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -85,11 +86,12 @@ export default function BusinessSection() {
             </div>
 
             <div className="mt-8">
-              <Link href="/franchise">
-                <button className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-3 font-bold text-sm shadow hover:bg-slate-100 transition">
-                  <span>Apply for Franchise</span>
-                  <ArrowRight size={16} />
-                </button>
+              <Link
+                href="/franchise"
+                className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-3 font-bold text-sm shadow hover:bg-slate-100 transition"
+              >
+                <span>Apply for Franchise</span>
+                <ArrowRight size={16} />
               </Link>
             </div>
           </div>

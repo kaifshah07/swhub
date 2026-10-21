@@ -97,7 +97,7 @@ export default function AdminSubcategoriesPage() {
 
         <button
           onClick={() => handleOpenModal()}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-lg shadow transition"
+          className="bg-gradient-to-r from-[#0000FF] to-[#0059FF] hover:opacity-95 text-white font-semibold px-5 py-2.5 rounded-lg shadow-md shadow-[#0000FF]/20 transition"
         >
           + Add Subcategory
         </button>
@@ -181,8 +181,8 @@ export default function AdminSubcategoriesPage() {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-                  placeholder="e.g. Wooden Toys"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0000FF] outline-none"
+                  placeholder="e.g. Atta & Flours, Tea & Coffee, Dishwashing, Notebooks"
                 />
               </div>
 
@@ -192,7 +192,7 @@ export default function AdminSubcategoriesPage() {
                   required
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0000FF] outline-none"
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -209,7 +209,7 @@ export default function AdminSubcategoriesPage() {
                   type="number"
                   value={form.displayOrder}
                   onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0000FF] outline-none"
                 />
               </div>
 
@@ -219,7 +219,7 @@ export default function AdminSubcategoriesPage() {
                   id="isActiveSub"
                   checked={form.isActive}
                   onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                  className="accent-orange-500 w-4 h-4"
+                  className="accent-[#0000FF] w-4 h-4"
                 />
                 <label htmlFor="isActiveSub" className="text-sm font-medium text-gray-700 cursor-pointer">
                   Active
@@ -236,7 +236,7 @@ export default function AdminSubcategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold"
+                  className="px-5 py-2 bg-gradient-to-r from-[#0000FF] to-[#0059FF] hover:opacity-95 text-white rounded-lg text-sm font-semibold shadow-md shadow-[#0000FF]/20"
                 >
                   Save
                 </button>

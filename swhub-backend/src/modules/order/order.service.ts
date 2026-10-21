@@ -116,6 +116,11 @@ export class OrderService {
         }
       }
 
+      // Calculate server-side shipping fee (Free delivery at or above ₹499, otherwise ₹40)
+      const subtotalNum = Number(totalAmount);
+      const shippingFee = subtotalNum >= 499 || subtotalNum === 0 ? 0 : 40;
+      totalAmount = totalAmount.plus(new Prisma.Decimal(shippingFee));
+
       // Generate order number
       const orderNumber =
         "ORD-" +
@@ -159,33 +164,33 @@ export class OrderService {
         });
       }
 
-      // Reduce stock
+      // Reduce stock atomically with concurrency guard (prevent overselling)
       for (const item of orderItems) {
-
-        await tx.product.update({
-
+        const updateResult = await tx.product.updateMany({
           where: {
             id: item.productId,
+            stock: { gte: item.quantity },
+            isActive: true,
           },
-
           data: {
-
             stock: {
-              decrement:
-                item.quantity,
+              decrement: item.quantity,
             },
-
           },
-
         });
 
+        if (updateResult.count === 0) {
+          throw new Error(
+            `Insufficient stock or unavailable item for product ID ${item.productId}`
+          );
+        }
       }
 
-
       return order;
-
+    }, {
+      maxWait: 10000,
+      timeout: 25000,
     });
-
   }
 
 
@@ -442,19 +447,58 @@ export class OrderService {
     id: number,
     orderStatus: any
   ) {
+    const validStatuses = [
+      "PENDING",
+      "CONFIRMED",
+      "PACKED",
+      "SHIPPED",
+      "DELIVERED",
+      "CANCELLED",
+    ];
+
+    if (!validStatuses.includes(orderStatus)) {
+      throw new Error(`Invalid order status: ${orderStatus}`);
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    if (order.orderStatus === "CANCELLED") {
+      throw new Error("Cannot alter status of an already cancelled order");
+    }
+
+    if (orderStatus === "CANCELLED") {
+      return await this.cancelOrder(id);
+    }
+
+    if (order.orderStatus === "DELIVERED" && orderStatus !== "DELIVERED") {
+      throw new Error("Cannot modify status of an already delivered order");
+    }
+
+    // Business rule: Online orders cannot be SHIPPED or DELIVERED if payment is not PAID
+    if (
+      order.paymentMethod === "ONLINE" &&
+      order.paymentStatus !== "PAID" &&
+      (orderStatus === "SHIPPED" || orderStatus === "DELIVERED")
+    ) {
+      throw new Error(
+        `Cannot update status to ${orderStatus} for an unpaid online order. Current payment status is ${order.paymentStatus}.`
+      );
+    }
 
     return prisma.order.update({
-
       where: {
         id,
       },
-
       data: {
         orderStatus,
       },
-
     });
-
   }
 
 
@@ -466,19 +510,42 @@ export class OrderService {
     id: number,
     paymentStatus: any
   ) {
+    const validPaymentStatuses = ["PENDING", "PAID", "FAILED", "REFUNDED"];
+    if (!validPaymentStatuses.includes(paymentStatus)) {
+      throw new Error(`Invalid payment status: ${paymentStatus}`);
+    }
 
-    return prisma.order.update({
-
-      where: {
-        id,
-      },
-
-      data: {
-        paymentStatus,
-      },
-
+    const order = await prisma.order.findUnique({
+      where: { id },
     });
 
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    // For ONLINE orders, manual update to PAID without gateway confirmation is prohibited
+    if (order.paymentMethod === "ONLINE" && paymentStatus === "PAID") {
+      throw new Error(
+        "Cannot manually mark an ONLINE payment order as PAID without payment gateway verification"
+      );
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const updatedOrder = await tx.order.update({
+        where: { id },
+        data: { paymentStatus },
+      });
+
+      await tx.payment.updateMany({
+        where: { orderId: id },
+        data: { paymentStatus },
+      });
+
+      return updatedOrder;
+    }, {
+      maxWait: 10000,
+      timeout: 25000,
+    });
   }
 
 
@@ -486,95 +553,99 @@ export class OrderService {
   // CANCEL ORDER
   // =========================
 
-  static async cancelOrder(
-    id: number
-  ) {
+  static async cancelOrder(id: number) {
+    return prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id },
+        include: { items: true, payment: true },
+      });
 
-    return prisma.$transaction(
-      async (tx) => {
-
-        const order =
-          await tx.order.findUnique({
-
-            where: {
-              id,
-            },
-
-            include: {
-              items: true,
-            },
-
-          });
-
-
-        if (!order) {
-          throw new Error(
-            "Order not found"
-          );
-        }
-
-
-        if (
-          order.orderStatus ===
-          "CANCELLED"
-        ) {
-
-          throw new Error(
-            "Order is already cancelled"
-          );
-
-        }
-
-
-        // Restore stock
-        for (
-          const item
-          of order.items
-        ) {
-
-          await tx.product.update({
-
-            where: {
-              id:
-                item.productId,
-            },
-
-            data: {
-
-              stock: {
-
-                increment:
-                  item.quantity,
-
-              },
-
-            },
-
-          });
-
-        }
-
-
-        return tx.order.update({
-
-          where: {
-            id,
-          },
-
-          data: {
-
-            orderStatus:
-              "CANCELLED",
-
-          },
-
-        });
-
+      if (!order) {
+        throw new Error("Order not found");
       }
-    );
 
+      if (order.orderStatus === "CANCELLED") {
+        throw new Error("Order is already cancelled");
+      }
+
+      if (order.orderStatus === "DELIVERED") {
+        throw new Error("Delivered orders cannot be cancelled directly");
+      }
+
+      // Restore stock exactly once
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { increment: item.quantity },
+          },
+        });
+      }
+
+      return tx.order.update({
+        where: { id },
+        data: {
+          orderStatus: "CANCELLED",
+        },
+      });
+    }, {
+      maxWait: 10000,
+      timeout: 25000,
+    });
   }
 
+  // =========================
+  // CANCEL ORDER (CUSTOMER)
+  // =========================
+
+  static async cancelCustomerOrder(orderId: number, customerId: number) {
+    return prisma.$transaction(async (tx) => {
+      const order = await tx.order.findFirst({
+        where: { id: orderId, customerId },
+        include: { items: true, payment: true },
+      });
+
+      if (!order) {
+        throw new Error("Order not found or does not belong to your account");
+      }
+
+      if (order.orderStatus === "CANCELLED") {
+        throw new Error("Order is already cancelled");
+      }
+
+      if (order.orderStatus !== "PENDING") {
+        throw new Error(
+          "Only orders in PENDING status can be cancelled online. For shipped/confirmed orders, please contact support."
+        );
+      }
+
+      // Restore reserved inventory
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+
+      // If pending online payment, mark failed
+      if (order.payment && order.payment.paymentStatus === "PENDING") {
+        await tx.payment.update({
+          where: { id: order.payment.id },
+          data: { paymentStatus: "FAILED" },
+        });
+      }
+
+      return tx.order.update({
+        where: { id: orderId },
+        data: {
+          orderStatus: "CANCELLED",
+        },
+      });
+    }, {
+      maxWait: 10000,
+      timeout: 25000,
+    });
+  }
 
   // =========================
   // DELETE ORDER

@@ -130,7 +130,7 @@ export default function AdminCouponsPage() {
 
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] active:scale-95"
+          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0000FF] to-[#0059FF] px-5 py-3 text-xs font-bold text-white shadow-lg shadow-[#0000FF]/25 transition hover:opacity-95 active:scale-95"
         >
           <Plus size={16} />
           <span>Create Coupon</span>
@@ -140,12 +140,12 @@ export default function AdminCouponsPage() {
       {/* COUPONS TABLE */}
       {loading ? (
         <div className="rounded-3xl border border-slate-200/80 bg-white p-16 text-center shadow-sm">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-orange-500 border-t-transparent mb-3" />
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-[#0000FF] mb-3" />
           <p className="text-xs font-bold text-slate-500">Loading coupons...</p>
         </div>
       ) : coupons.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-16 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 mb-3">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#0000FF] mb-3">
             <Ticket size={28} />
           </div>
           <h3 className="text-base font-bold text-slate-800">No active coupons</h3>
@@ -299,7 +299,7 @@ export default function AdminCouponsPage() {
                     onChange={(e) =>
                       setForm({ ...form, discountType: e.target.value })
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#0000FF] focus:bg-white"
                   >
                     <option value="PERCENTAGE">Percentage (%)</option>
                     <option value="FIXED">Fixed Amount (₹)</option>
@@ -318,7 +318,7 @@ export default function AdminCouponsPage() {
                       setForm({ ...form, discountValue: e.target.value })
                     }
                     placeholder="e.g. 20 (for 20% or ₹20)"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-[#0000FF] focus:bg-white"
                   />
                 </div>
 
@@ -333,7 +333,7 @@ export default function AdminCouponsPage() {
                       setForm({ ...form, maxDiscount: e.target.value })
                     }
                     placeholder="Optional max cap"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-[#0000FF] focus:bg-white"
                   />
                 </div>
 
@@ -348,7 +348,7 @@ export default function AdminCouponsPage() {
                       setForm({ ...form, minOrderAmount: e.target.value })
                     }
                     placeholder="e.g. 499"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-[#0000FF] focus:bg-white"
                   />
                 </div>
 
@@ -363,7 +363,7 @@ export default function AdminCouponsPage() {
                       setForm({ ...form, usageLimit: e.target.value })
                     }
                     placeholder="e.g. 100"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-[#0000FF] focus:bg-white"
                   />
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function AdminCouponsPage() {
                   onChange={(e) =>
                     setForm({ ...form, expiresAt: e.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-orange-500 focus:bg-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none focus:border-[#0000FF] focus:bg-white"
                 />
               </div>
 
@@ -392,8 +392,8 @@ export default function AdminCouponsPage() {
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
-                  placeholder="e.g. Festive discount on all kids toys"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:bg-white"
+                  placeholder="e.g. Festive discount on daily grocery essentials"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:bg-white"
                 />
               </div>
 
@@ -407,7 +407,7 @@ export default function AdminCouponsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-orange-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-orange-700 shadow-md shadow-orange-600/20"
+                  className="rounded-xl bg-gradient-to-r from-[#0000FF] to-[#0059FF] px-6 py-2.5 text-xs font-bold text-white hover:opacity-95 shadow-md shadow-[#0000FF]/20"
                 >
                   Create Coupon
                 </button>

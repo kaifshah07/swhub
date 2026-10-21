@@ -85,12 +85,12 @@ export default function TrustSectionAdmin() {
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">Trust & Credibility Section</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Parent reassurance badges displayed across the homepage to drive buyer confidence.
+            Customer reassurance badges displayed across the homepage to drive buyer confidence.
           </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-orange-700"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#0000FF] hover:bg-[#0059FF] px-4 py-2.5 text-xs font-bold text-white shadow transition"
         >
           <Plus size={16} /> Add Feature
         </button>
@@ -161,7 +161,7 @@ export default function TrustSectionAdmin() {
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-xs font-bold bg-gray-100 rounded-xl">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-xs font-bold bg-orange-600 text-white rounded-xl">Save</button>
+                <button type="submit" className="px-4 py-2 text-xs font-bold bg-[#0000FF] hover:bg-[#0059FF] text-white rounded-xl transition">Save</button>
               </div>
             </form>
           </div>

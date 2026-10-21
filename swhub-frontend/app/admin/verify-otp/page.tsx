@@ -34,7 +34,7 @@ export default function VerifyOtpPage() {
       );
 
     if (!storedCustomerId || !storedEmail) {
-      router.replace("/register");
+      router.replace("/verify-otp");
       return;
     }
 

@@ -82,7 +82,7 @@ export default function ProductSectionManager({
         <button
           onClick={saveSection}
           disabled={saving}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition disabled:opacity-50"
+          className="bg-[#0000FF] hover:bg-[#0059FF] text-white font-semibold px-6 py-2.5 rounded-lg shadow transition disabled:opacity-50"
         >
           {saving ? "Saving..." : "Save Selection"}
         </button>
@@ -101,7 +101,7 @@ export default function ProductSectionManager({
                 key={product.id}
                 className={`border p-4 rounded-xl flex items-center gap-4 cursor-pointer transition ${
                   isChecked
-                    ? "border-orange-500 bg-orange-50/50 shadow-sm"
+                    ? "border-blue-600 bg-blue-50/50 shadow-sm"
                     : "bg-white hover:border-gray-300"
                 }`}
               >
@@ -109,7 +109,7 @@ export default function ProductSectionManager({
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleProduct(product.id)}
-                  className="w-5 h-5 accent-orange-500 rounded"
+                  className="w-5 h-5 accent-[#0000FF] rounded"
                 />
 
                 {product.thumbnail && (

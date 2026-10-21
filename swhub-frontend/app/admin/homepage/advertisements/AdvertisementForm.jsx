@@ -107,9 +107,9 @@ export default function AdvertisementForm({
         <div>
           <label className="block text-xs font-semibold mb-1">Banner Title</label>
           <input
-            placeholder="e.g. Mega Kids Weekend Sale"
+            placeholder="e.g. Mega Weekend Pantry Sale"
             value={form.title}
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
             onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
         </div>
@@ -119,7 +119,7 @@ export default function AdvertisementForm({
           <select
             value={form.position}
             onChange={(e) => setForm({ ...form, position: e.target.value })}
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
           >
             <option value="wide_banner">Wide Banner (Full Width)</option>
             <option value="banner_strip_1">Banner Strip 1 (Upper Strip)</option>
@@ -131,9 +131,9 @@ export default function AdvertisementForm({
         <div>
           <label className="block text-xs font-semibold mb-1">Redirect URL</label>
           <input
-            placeholder="e.g. /products?type=flash-sale or /categories/toys"
+            placeholder="e.g. /products?type=flash-sale or /categories/groceries"
             value={form.redirectUrl}
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
             onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })}
           />
         </div>
@@ -144,7 +144,7 @@ export default function AdvertisementForm({
             type="number"
             value={form.displayOrder}
             placeholder="0"
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
             onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })}
           />
         </div>
@@ -154,7 +154,7 @@ export default function AdvertisementForm({
           <input
             type="file"
             accept="image/*"
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
             onChange={(e) => setForm({ ...form, desktopImage: e.target.files[0] })}
           />
           {advertisement?.desktopImage && !form.desktopImage && (
@@ -174,7 +174,7 @@ export default function AdvertisementForm({
           <input
             type="file"
             accept="image/*"
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
             onChange={(e) => setForm({ ...form, mobileImage: e.target.files[0] })}
           />
         </div>
@@ -185,7 +185,7 @@ export default function AdvertisementForm({
             id="adActive"
             checked={form.isActive}
             onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-            className="accent-orange-500 w-4 h-4"
+            className="accent-[#0000FF] w-4 h-4"
           />
           <label htmlFor="adActive" className="text-sm font-semibold text-gray-700 cursor-pointer">
             Active on Homepage
@@ -203,7 +203,7 @@ export default function AdvertisementForm({
           <button
             type="submit"
             disabled={loading}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2 rounded-lg text-sm shadow transition disabled:opacity-50"
+            className="bg-[#0000FF] hover:bg-[#0059FF] text-white font-semibold px-5 py-2 rounded-lg text-sm shadow transition disabled:opacity-50"
           >
             {loading ? "Saving..." : "Save Advertisement"}
           </button>

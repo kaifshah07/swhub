@@ -6,6 +6,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { ArrowRight, Minus, Plus, Trash2, ShoppingBag, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { openCustomerAuthModal, isTokenExpired, clearCustomerSession } from "@/lib/authModal";
 
 type CartItem = {
   productId: number;
@@ -79,8 +80,15 @@ export default function CartPage() {
 
   function handleProceedToCheckout() {
     const token = localStorage.getItem("customer_token");
-    if (!token) {
-      window.dispatchEvent(new CustomEvent("openCustomerAuthModal"));
+    if (!token || isTokenExpired(token)) {
+      clearCustomerSession();
+      openCustomerAuthModal({
+        defaultTab: "login",
+        message: "Sign in or create an account to proceed to checkout.",
+        onSuccess: () => {
+          router.push("/checkout");
+        },
+      });
     } else {
       router.push("/checkout");
     }

@@ -130,7 +130,11 @@ export default function CustomerProfilePage() {
                 <ProfileItem
                   icon={<Phone size={18} />}
                   label="Phone Number"
-                  value={customer?.mobile || customer?.phone || "Not available"}
+                  value={
+                    customer?.phone && !customer.phone.startsWith("g_")
+                      ? customer.phone
+                      : customer?.mobile || "Not provided"
+                  }
                 />
 
                 <ProfileItem

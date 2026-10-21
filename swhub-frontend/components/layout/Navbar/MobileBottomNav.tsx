@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, LayoutGrid, ShoppingCart, User } from "lucide-react";
 import MobileSearchOverlay from "./MobileSearchOverlay";
+import { isTokenExpired } from "@/lib/authModal";
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
@@ -25,7 +26,7 @@ export default function MobileBottomNav() {
 
     function loadAuth() {
       const token = localStorage.getItem("customer_token");
-      setIsLoggedIn(!!token);
+      setIsLoggedIn(!!token && !isTokenExpired(token));
     }
 
     loadCartCount();
@@ -91,7 +92,8 @@ export default function MobileBottomNav() {
         {/* Search Placeholder */}
         <button 
           type="button"
-          onClick={handleSearchClick} 
+          onClick={handleSearchClick}
+          aria-label="Search items"
           className="flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors text-slate-500 hover:text-slate-900"
         >
           <Search size={22} strokeWidth={2} />
@@ -100,7 +102,8 @@ export default function MobileBottomNav() {
 
         {/* Cart */}
         <button 
-          onClick={() => window.dispatchEvent(new CustomEvent("openCartDrawer"))} 
+          onClick={() => window.dispatchEvent(new CustomEvent("openCartDrawer"))}
+          aria-label="View Cart"
           className={`flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors ${
             isActive("/cart") ? "text-primary" : "text-slate-500 hover:text-slate-900"
           }`}

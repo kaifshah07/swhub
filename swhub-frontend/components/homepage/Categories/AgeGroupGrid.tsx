@@ -45,7 +45,7 @@ export default function AgeGroupGrid() {
               <p className="font-bold text-xs text-slate-800 group-hover:text-primary transition leading-snug line-clamp-1">
                 {aisle.label}
               </p>
-              <span className="text-[10px] text-slate-400 mt-1 line-clamp-1">
+              <span className="text-[10px] text-slate-500 mt-1 line-clamp-1 font-medium">
                 {aisle.desc}
               </span>
             </Link>

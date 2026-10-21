@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_URL } from "@/lib/api";
+import { API_URL, fetchWithTimeout } from "@/lib/api";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Tag } from "lucide-react";
 
@@ -30,7 +30,7 @@ export default function BannerStrip({
   useEffect(() => {
     async function loadBannerStripAds() {
       try {
-        const res = await fetch(`${API_URL}/homepage/advertisements`);
+        const res = await fetchWithTimeout(`${API_URL}/homepage/advertisements`, {}, 5000);
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           let filtered = data.data.filter(

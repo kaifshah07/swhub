@@ -242,7 +242,7 @@ export default function ProductModal({
         {/* HEADER BAR */}
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/60">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-[#0000FF]">
               <Package size={20} />
             </div>
             <div>
@@ -283,8 +283,8 @@ export default function ProductModal({
                   onChange={(e) =>
                     setForm({ ...form, name: e.target.value })
                   }
-                  placeholder="e.g. Wooden Educational Activity Cube Toy"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20"
+                  placeholder="e.g. Fortune Sunlite Refined Sunflower Oil 1L / Tata Tea Gold 500g"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:bg-white focus:ring-2 focus:ring-[#0000FF]/20"
                 />
               </div>
 
@@ -305,23 +305,45 @@ export default function ProductModal({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Target Age Group
+                  Daily Need / Aisle Tag
                 </label>
                 <select
                   value={form.ageGroup}
                   onChange={(e) =>
                     setForm({ ...form, ageGroup: e.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:bg-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-[#0000FF] focus:bg-white"
                 >
-                  <option value="">Select Age Range</option>
-                  <option value="0-6 Months">0-6 Months (Infant)</option>
-                  <option value="6-12 Months">6-12 Months (Crawler)</option>
-                  <option value="1-3 Years">1-3 Years (Toddler)</option>
-                  <option value="3-5 Years">3-5 Years (Preschool)</option>
-                  <option value="5-8 Years">5-8 Years (Early School)</option>
-                  <option value="8-12 Years">8-12 Years (Kids & Tweens)</option>
-                  <option value="All Ages">All Ages</option>
+                  <option value="">Select Curated Tag (Optional)</option>
+                  {form.ageGroup &&
+                    ![
+                      "Daily Groceries",
+                      "Cooking Oils & Ghee",
+                      "Tea, Coffee & Drinks",
+                      "Crockery & Utensils",
+                      "Cleaning & Detergent",
+                      "Personal Care",
+                      "Snacks & Packaged Food",
+                      "Stationery & Paper",
+                      "Everyday Essentials",
+                      "Family Saver Pack",
+                      "Bulk Refill Pack",
+                    ].includes(form.ageGroup) && (
+                      <option value={form.ageGroup}>
+                        {form.ageGroup} (Current Tag)
+                      </option>
+                    )}
+                  <option value="Daily Groceries">Daily Groceries</option>
+                  <option value="Cooking Oils & Ghee">Cooking Oils & Ghee</option>
+                  <option value="Tea, Coffee & Drinks">Tea, Coffee & Drinks</option>
+                  <option value="Crockery & Utensils">Crockery & Utensils</option>
+                  <option value="Cleaning & Detergent">Cleaning & Detergent</option>
+                  <option value="Personal Care">Personal Care</option>
+                  <option value="Snacks & Packaged Food">Snacks & Packaged Food</option>
+                  <option value="Stationery & Paper">Stationery & Paper</option>
+                  <option value="Everyday Essentials">Everyday Essentials</option>
+                  <option value="Family Saver Pack">Family Saver Pack</option>
+                  <option value="Bulk Refill Pack">Bulk Refill Pack</option>
                 </select>
               </div>
 
@@ -335,8 +357,8 @@ export default function ProductModal({
                   onChange={(e) =>
                     setForm({ ...form, shortDescription: e.target.value })
                   }
-                  placeholder="Brief catchy phrase displayed on hover cards..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:bg-white"
+                  placeholder="e.g. 100% Pure refined sunflower oil enriched with Vitamins A & D"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:bg-white"
                 />
               </div>
 
@@ -350,8 +372,8 @@ export default function ProductModal({
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
-                  placeholder="Product features, safe materials, dimensions, and usage guide..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:bg-white"
+                  placeholder="Product specifications, ingredients, net weight/volume, manufacturer details, and storage instructions..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:bg-white"
                 />
               </div>
             </div>
@@ -377,7 +399,7 @@ export default function ProductModal({
                     setForm({ ...form, price: e.target.value })
                   }
                   placeholder="999"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:ring-2 focus:ring-[#0000FF]/20"
                 />
               </div>
 
@@ -393,7 +415,7 @@ export default function ProductModal({
                     setForm({ ...form, discountPrice: e.target.value })
                   }
                   placeholder="799"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:ring-2 focus:ring-[#0000FF]/20"
                 />
               </div>
 
@@ -425,7 +447,7 @@ export default function ProductModal({
                     setForm({ ...form, stock: e.target.value })
                   }
                   placeholder="25"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:ring-2 focus:ring-[#0000FF]/20"
                 />
               </div>
             </div>
@@ -458,7 +480,7 @@ export default function ProductModal({
                   required
                   value={form.categoryId}
                   onChange={handleCategoryChange}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:bg-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-[#0000FF] focus:bg-white"
                 >
                   <option value="">Select Category</option>
                   {categories.map((c) => (
@@ -478,7 +500,7 @@ export default function ProductModal({
                   onChange={(e) =>
                     setForm({ ...form, subcategoryId: e.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-orange-500 focus:bg-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-[#0000FF] focus:bg-white"
                 >
                   <option value="">None / General</option>
                   {subcategories.map((sc) => (
@@ -545,9 +567,9 @@ export default function ProductModal({
             ) : (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-orange-400 hover:bg-orange-50/20"
+                className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-[#0000FF] hover:bg-blue-50/20"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-[#0000FF] mb-2">
                   <UploadCloud size={20} />
                 </div>
                 <p className="text-xs font-bold text-slate-700">
@@ -666,7 +688,7 @@ export default function ProductModal({
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0000FF] to-[#0059FF] px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#0000FF]/25 transition hover:opacity-95 active:scale-95 disabled:opacity-50"
             >
               {loading ? "Saving Product..." : product ? "Update Product" : "Publish Product"}
             </button>

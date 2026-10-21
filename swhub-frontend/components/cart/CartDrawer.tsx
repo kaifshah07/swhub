@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
+import { openCustomerAuthModal, isTokenExpired, clearCustomerSession } from "@/lib/authModal";
 
 type CartItem = {
   productId: number;
@@ -106,8 +107,15 @@ export default function CartDrawer() {
   const handleProceedToCheckout = () => {
     const token = localStorage.getItem("customer_token");
     setIsOpen(false);
-    if (!token) {
-      window.dispatchEvent(new CustomEvent("openCustomerAuthModal"));
+    if (!token || isTokenExpired(token)) {
+      clearCustomerSession();
+      openCustomerAuthModal({
+        defaultTab: "login",
+        message: "Sign in or create an account to proceed to checkout.",
+        onSuccess: () => {
+          router.push("/checkout");
+        },
+      });
     } else {
       router.push("/checkout");
     }

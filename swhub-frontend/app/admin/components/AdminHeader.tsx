@@ -93,28 +93,28 @@ export default function AdminHeader({
         <Link
           href="/"
           target="_blank"
-          className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#0EA5E9] bg-amber-50/70 px-3.5 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-amber-50 hover:border-[#0EA5E9] shadow-sm"
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#0000FF]/30 bg-blue-50/50 px-3.5 py-1.5 text-xs font-bold text-[#0000FF] transition hover:bg-blue-100/60 shadow-sm"
         >
           <ExternalLink size={13} />
           <span>View Storefront</span>
         </Link>
 
         {/* STATUS PILL */}
-        <div className="hidden md:flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-[#0EA5E9] border border-[#0EA5E9]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#0EA5E9] animate-pulse" />
+        <div className="hidden md:flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>Live API</span>
         </div>
 
         {/* ADMIN PROFILE CHIP */}
         <div className="flex items-center gap-2.5 border-l border-slate-200 pl-3 sm:pl-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-accent to-accent text-xs font-black text-white shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0000FF] text-xs font-black text-white shadow-sm">
             {adminUser[0]?.toUpperCase() || "A"}
           </div>
           <div className="hidden sm:block text-left">
             <p className="text-xs font-bold text-slate-800 leading-tight">
               {adminUser}
             </p>
-            <span className="inline-block text-[10px] font-semibold text-slate-600 bg-amber-50 px-1.5 py-0.2 rounded">
+            <span className="inline-block text-[10px] font-semibold text-[#0000FF] bg-blue-50 px-1.5 py-0.2 rounded">
               Super Admin
             </span>
           </div>

@@ -145,7 +145,7 @@ export default function AdminCategoriesPage() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 hover:bg-orange-700 hover:shadow-lg hover:shadow-orange-600/30 transition-all active:scale-95"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0000FF] to-[#0059FF] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-[#0000FF]/20 hover:opacity-95 transition-all active:scale-95"
         >
           <Plus size={16} />
           <span>Add New Category</span>
@@ -164,7 +164,7 @@ export default function AdminCategoriesPage() {
             placeholder="Search categories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+            className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs outline-none transition focus:border-[#0000FF] focus:ring-4 focus:ring-[#0000FF]/10"
           />
         </div>
       </div>
@@ -173,13 +173,13 @@ export default function AdminCategoriesPage() {
       {loading ? (
         <div className="flex min-h-[300px] items-center justify-center rounded-3xl border border-slate-200/80 bg-white shadow-sm">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-100 border-t-orange-600" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-100 border-t-[#0000FF]" />
             <p className="text-xs font-bold text-slate-500">Loading categories...</p>
           </div>
         </div>
       ) : filteredCategories.length === 0 ? (
         <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 mb-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#0000FF] mb-3">
             <FolderTree size={24} />
           </div>
           <h3 className="text-sm font-bold text-slate-900">No categories found</h3>
@@ -216,7 +216,7 @@ export default function AdminCategoriesPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 text-sm group-hover:text-orange-600 transition">
+                          <p className="font-bold text-slate-900 text-sm group-hover:text-[#0000FF] transition">
                             {cat.name}
                           </p>
                         </div>
@@ -246,7 +246,7 @@ export default function AdminCategoriesPage() {
 
                         <button
                           onClick={() => handleOpenModal(cat)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 hover:bg-blue-50 hover:text-[#0000FF] transition"
                           title="Edit Category"
                         >
                           <Edit3 size={15} />
@@ -321,9 +321,9 @@ export default function AdminCategoriesPage() {
                   ) : (
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-orange-400 hover:bg-orange-50/20"
+                      className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-[#0000FF] hover:bg-blue-50/20"
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 mb-2">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-[#0000FF] mb-2">
                         <UploadCloud size={20} />
                       </div>
                       <p className="text-xs font-bold text-slate-700">
@@ -347,8 +347,8 @@ export default function AdminCategoriesPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="e.g. Toys & Games, Baby Care, Clothing"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:bg-white"
+                    placeholder="e.g. Groceries & Staples, Beverages, Kitchenware, Household & Cleaning"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:bg-white"
                   />
                 </div>
 
@@ -363,7 +363,7 @@ export default function AdminCategoriesPage() {
                       setFormData({ ...formData, description: e.target.value })
                     }
                     placeholder="Brief description of this category..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:bg-white"
                   />
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function AdminCategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-orange-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-orange-700 shadow-md shadow-orange-600/20"
+                  className="rounded-xl bg-gradient-to-r from-[#0000FF] to-[#0059FF] px-6 py-2.5 text-xs font-bold text-white hover:opacity-95 shadow-md shadow-[#0000FF]/20"
                 >
                   Save Category
                 </button>

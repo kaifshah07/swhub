@@ -26,13 +26,31 @@ export default function GoogleAuthButton({
   const [loading, setLoading] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+  const clientId = (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "")
+    .replace(/[\r\n\s]+/g, "")
+    .trim();
 
   useEffect(() => {
     if (!clientId) return;
 
+    function initGoogle() {
+      if (!window.google?.accounts?.id) return;
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          use_fedcm_for_prompt: true,
+        });
+        setScriptLoaded(true);
+      } catch (err) {
+        console.warn("Google initialization warning:", err);
+      }
+    }
+
     if (window.google?.accounts?.id) {
-      setScriptLoaded(true);
+      initGoogle();
       return;
     }
 
@@ -41,7 +59,7 @@ export default function GoogleAuthButton({
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      setScriptLoaded(true);
+      initGoogle();
     };
     script.onerror = () => {
       console.warn("Failed to load Google Identity Services SDK");
@@ -111,14 +129,12 @@ export default function GoogleAuthButton({
         callback: handleCredentialResponse,
         auto_select: false,
         cancel_on_tap_outside: true,
+        use_fedcm_for_prompt: true,
       });
 
-      // Prompt the One-Tap / popup selector
-      window.google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          setLoading(false);
-        }
-      });
+      // Prompt Google Account picker
+      window.google.accounts.id.prompt();
+      setTimeout(() => setLoading(false), 5000);
     } catch (err) {
       console.error("Google prompt error:", err);
       setLoading(false);

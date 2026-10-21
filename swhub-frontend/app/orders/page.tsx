@@ -5,9 +5,7 @@ import Link from "next/link";
 import EmptyState from "@/components/ui/EmptyState";
 import { useRouter } from "next/navigation";
 import { User, Package, Heart, LogOut, ArrowLeft, ChevronRight, ShoppingBag } from "lucide-react";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 type OrderItem = {
   id: number;
@@ -108,17 +106,17 @@ export default function CustomerOrdersPage() {
   function getStatusStyle(status: string) {
     switch (status) {
       case "DELIVERED":
-        return "-blue- text-primary border-primary";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "CANCELLED":
-        return "bg-red-600/20 text-red-600 border-red-200";
+        return "bg-red-50 text-red-600 border-red-200";
       case "SHIPPED":
-        return "-sky- -sky- -sky-";
+        return "bg-purple-50 text-purple-700 border-purple-200";
+      case "PACKED":
+        return "bg-cyan-50 text-cyan-700 border-cyan-200";
       case "CONFIRMED":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      case "PROCESSING":
-        return "bg-amber-50 text-slate-600 border-primary";
+        return "bg-blue-50 text-blue-700 border-blue-200";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-amber-50 text-amber-700 border-amber-200";
     }
   }
 
@@ -250,9 +248,25 @@ export default function CustomerOrdersPage() {
                         <span className={`px-3 py-1 text-xs font-extrabold uppercase tracking-wide rounded-md border ${getStatusStyle(order.orderStatus)}`}>
                             {order.orderStatus.replace('_', ' ')}
                         </span>
-                        <span className="px-3 py-1 text-xs font-extrabold uppercase tracking-wide rounded-md border bg-slate-50 text-slate-600 border-slate-200">
-                            {order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Paid'}
-                        </span>
+                        {order.paymentMethod === "COD" ? (
+                          <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border bg-slate-50 text-slate-700 border-slate-200">
+                            Cash on Delivery
+                          </span>
+                        ) : (
+                          <span
+                            className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border ${
+                              order.paymentStatus === "PAID"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : order.paymentStatus === "REFUNDED"
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : order.paymentStatus === "FAILED"
+                                ? "bg-red-50 text-red-700 border-red-200"
+                                : "bg-amber-50 text-amber-700 border-amber-200"
+                            }`}
+                          >
+                            Online: {order.paymentStatus}
+                          </span>
+                        )}
                     </div>
 
                     <div className="space-y-4">

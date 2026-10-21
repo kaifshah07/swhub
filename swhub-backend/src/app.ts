@@ -17,6 +17,7 @@ app.use(helmet());
 const allowedOrigins = [
   "http://localhost:3000",
   "https://balmitra-final.vercel.app",
+  ...env.CORS_ORIGINS,
 ];
 
 app.use(
@@ -44,8 +45,14 @@ app.use(
   })
 );
 
-// Body Parser
-app.use(express.json());
+// Body Parser (capture rawBody for webhook HMAC signature verification)
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 
 // Cookies
@@ -61,7 +68,7 @@ app.use(morgan("dev"));
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Balmitra Backend API is Running 🚀",
+    message: "SW Hub Backend API is Running 🚀",
   });
 });
 

@@ -111,21 +111,21 @@ export default function HeroForm({
         <div>
           <label className="block text-xs font-semibold mb-1">Slide Title *</label>
           <input
-            placeholder="e.g. Trendy Kids Clothing & Fashion"
+            placeholder="e.g. Fresh Daily Staples & Household Goods"
             required
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
           />
         </div>
 
         <div>
           <label className="block text-xs font-semibold mb-1">Subtitle / Tagline</label>
           <input
-            placeholder="e.g. Up to 60% off on baby essentials"
+            placeholder="e.g. Up to 40% off on everyday grocery essentials"
             value={form.subtitle}
             onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
           />
         </div>
 
@@ -136,7 +136,7 @@ export default function HeroForm({
               placeholder="e.g. Shop Now"
               value={form.buttonText}
               onChange={(e) => setForm({ ...form, buttonText: e.target.value })}
-              className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+              className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
             />
           </div>
 
@@ -146,7 +146,7 @@ export default function HeroForm({
               placeholder="e.g. /products?type=featured"
               value={form.buttonUrl}
               onChange={(e) => setForm({ ...form, buttonUrl: e.target.value })}
-              className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+              className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function HeroForm({
             placeholder="0"
             value={form.displayOrder}
             onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })}
-            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-orange-500"
+            className="border p-2.5 rounded-lg w-full text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
           />
         </div>
 
@@ -168,7 +168,7 @@ export default function HeroForm({
             type="file"
             accept="image/*"
             onChange={(e) => setForm({ ...form, desktopImage: e.target.files[0] })}
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
           />
           {hero?.desktopImage && !form.desktopImage && (
             <div className="mt-2 flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function HeroForm({
             type="file"
             accept="image/*"
             onChange={(e) => setForm({ ...form, mobileImage: e.target.files[0] })}
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
           />
         </div>
 
@@ -198,7 +198,7 @@ export default function HeroForm({
             id="heroActive"
             checked={form.isActive}
             onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-            className="accent-orange-500 w-4 h-4"
+            className="accent-[#0000FF] w-4 h-4"
           />
           <label htmlFor="heroActive" className="text-sm font-semibold text-gray-700 cursor-pointer">
             Active in Slider
@@ -216,7 +216,7 @@ export default function HeroForm({
           <button
             type="submit"
             disabled={loading}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2 rounded-lg text-sm shadow transition disabled:opacity-50"
+            className="bg-[#0000FF] hover:bg-[#0059FF] text-white font-semibold px-5 py-2 rounded-lg text-sm shadow transition disabled:opacity-50"
           >
             {loading ? "Saving..." : "Save Hero Slide"}
           </button>

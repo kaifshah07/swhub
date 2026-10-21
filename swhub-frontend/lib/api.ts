@@ -1,16 +1,26 @@
-const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL;
+function resolveApiUrl(): string {
+  let url = (process.env.NEXT_PUBLIC_API_URL || "").trim();
+  if (!url || url.includes("balmitra-final.onrender.com")) {
+    url = "https://swhub.onrender.com/api";
+  }
+  return url.replace(/\/+$/, "");
+}
 
-export const API_URL = (configuredApiUrl || "https://swhub.onrender.com/api").replace(
-  /\/$/,
-  ""
-);
+function resolveBackendUrl(): string {
+  let url = (process.env.NEXT_PUBLIC_BACKEND_URL || "").trim();
+  if (!url || url.includes("balmitra-final.onrender.com")) {
+    url = API_URL.replace(/\/api$/, "");
+  }
+  return url.replace(/\/+$/, "");
+}
 
-export const BACKEND_URL = (
-  process.env.NEXT_PUBLIC_BACKEND_URL || API_URL.replace(/\/api$/, "")
-).replace(/\/$/, "");
+export const API_URL = resolveApiUrl();
+export const BACKEND_URL = resolveBackendUrl();
 
 export function productImageUrl(thumbnail?: string | null): string {
-  if (!thumbnail) return "/images/products/teddy.png";
+  if (!thumbnail) {
+    return "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600";
+  }
   if (/^https?:\/\//i.test(thumbnail) || thumbnail.startsWith("/")) {
     return thumbnail;
   }
@@ -21,7 +31,7 @@ export function productImageUrl(thumbnail?: string | null): string {
 export async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
-  timeoutMs = 5000
+  timeoutMs = 15000
 ): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -32,8 +42,12 @@ export async function fetchWithTimeout(
     });
     clearTimeout(timer);
     return res;
-  } catch (err) {
+  } catch (err: any) {
     clearTimeout(timer);
+    if (err?.name === "AbortError") {
+      // Return a graceful timeout representation or rethrow with clear message
+      throw new Error(`Request timed out after ${timeoutMs}ms: ${url}`);
+    }
     throw err;
   }
 }

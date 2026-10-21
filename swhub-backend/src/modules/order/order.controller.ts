@@ -211,34 +211,79 @@ export class OrderController {
     req: Request,
     res: Response
   ) {
+    try {
+      const order =
+        await OrderService.updateStatus(
+          Number(req.params.id),
+          req.body.orderStatus
+        );
 
-    const order =
-      await OrderService.updateStatus(
-        Number(req.params.id),
-        req.body.orderStatus
-      );
-
-    return res.json({
-      success: true,
-      message: "Order status updated",
-      data: order,
-    });
+      return res.json({
+        success: true,
+        message: "Order status updated",
+        data: order,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
   }
-
 
   static async delete(
     req: Request,
     res: Response
   ) {
+    try {
+      await OrderService.delete(
+        Number(req.params.id)
+      );
 
-    await OrderService.delete(
-      Number(req.params.id)
-    );
+      return res.json({
+        success: true,
+        message: "Order deleted successfully",
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 
-    return res.json({
-      success: true,
-      message: "Order deleted successfully",
-    });
+  static async cancelCustomerOrder(
+    req: Request,
+    res: Response
+  ) {
+    try {
+      const customerId =
+        (req as any).customer?.id;
+
+      if (!customerId) {
+        return res.status(401).json({
+          success: false,
+          message: "Customer authentication required",
+        });
+      }
+
+      const order =
+        await OrderService.cancelCustomerOrder(
+          Number(req.params.id),
+          Number(customerId)
+        );
+
+      return res.json({
+        success: true,
+        message: "Order cancelled successfully",
+        data: order,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
   }
 
 

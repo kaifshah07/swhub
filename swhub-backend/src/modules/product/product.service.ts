@@ -47,7 +47,7 @@ if (data.file) {
       .trim()
       .replace(/\s+/g, "-");
 
-    const sku = `BAL-${Date.now()}`;
+    const sku = `SWH-${Date.now()}`;
 
     const categoryId = Number(data.categoryId);
 

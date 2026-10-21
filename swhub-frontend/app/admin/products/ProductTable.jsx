@@ -17,12 +17,12 @@ export default function ProductTable({ products, onEdit, onDelete }) {
   if (!products || products.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-16 text-center shadow-sm">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 mb-3">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#0000FF] mb-3">
           <Package size={28} />
         </div>
         <h3 className="text-base font-bold text-slate-800">No products found</h3>
         <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
-          Try adjusting your search query or filters, or add a brand-new product to your store catalog.
+          Try adjusting your search query or filters, or add a brand-new daily-needs product to your store catalog.
         </p>
       </div>
     );
@@ -72,7 +72,7 @@ export default function ProductTable({ products, onEdit, onDelete }) {
                         )}
                       </div>
                       <div className="min-w-0 max-w-[240px]">
-                        <p className="font-bold text-slate-900 line-clamp-1 text-xs group-hover:text-orange-600 transition">
+                        <p className="font-bold text-slate-900 line-clamp-1 text-xs group-hover:text-[#0000FF] transition">
                           {p.name}
                         </p>
                         <div className="mt-1 flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function ProductTable({ products, onEdit, onDelete }) {
                             </span>
                           )}
                           <span className="text-[10px] font-mono text-slate-400">
-                            {p.sku || `BAL-${p.id}`}
+                            {p.sku || `SWH-${p.id}`}
                           </span>
                         </div>
                       </div>
@@ -220,7 +220,7 @@ export default function ProductTable({ products, onEdit, onDelete }) {
 
                       <button
                         onClick={() => onEdit(p)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 hover:bg-blue-50 hover:text-[#0000FF] transition"
                         title="Edit Product"
                       >
                         <Edit3 size={15} />

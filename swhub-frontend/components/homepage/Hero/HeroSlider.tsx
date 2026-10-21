@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_URL } from "@/lib/api";
+import { API_URL, fetchWithTimeout } from "@/lib/api";
 import Link from "next/link";
 import { ArrowRight, ShoppingBag, ShieldCheck, Zap } from "lucide-react";
 
@@ -60,7 +60,7 @@ export default function HeroSlider() {
   useEffect(() => {
     async function loadHeroes() {
       try {
-        const response = await fetch(`${API_URL}/homepage/heroes`);
+        const response = await fetchWithTimeout(`${API_URL}/homepage/heroes`, {}, 5000);
         const result = await response.json();
         if (result.success && Array.isArray(result.data)) {
           const activeHeroes = result.data.filter((h: Hero) => h.isActive !== false);
@@ -69,7 +69,7 @@ export default function HeroSlider() {
           }
         }
       } catch (error) {
-        console.error("Failed to load hero slides:", error);
+        console.warn("Using default hero slides:", error);
       } finally {
         setLoading(false);
       }
@@ -148,6 +148,7 @@ export default function HeroSlider() {
               {heroes.map((_, index) => (
                 <button
                   key={index}
+                  aria-label={`Slide ${index + 1}`}
                   onClick={() => setCurrent(index)}
                   className={`h-2 rounded-full transition-all ${
                     current === index ? "bg-primary w-8" : "bg-slate-300 w-2"

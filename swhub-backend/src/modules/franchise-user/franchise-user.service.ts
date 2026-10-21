@@ -5,9 +5,9 @@ const prisma = new PrismaClient();
 
 export class FranchiseUserService {
   static async createFranchiseUser(data: any) {
-    // Generate Franchise ID (e.g., BAL-FR-001)
+    // Generate Franchise ID (e.g., SWH-FR-001)
     const count = await prisma.franchiseUser.count();
-    const franchiseId = `BAL-FR-${String(count + 1).padStart(3, "0")}`;
+    const franchiseId = `SWH-FR-${String(count + 1).padStart(3, "0")}`;
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 

@@ -205,6 +205,10 @@ export default function ProductCard({ product, wishlistMode = false, onRemoveFro
           <img
             src={product.image}
             alt={product.name}
+            width={200}
+            height={200}
+            loading="lazy"
+            decoding="async"
             className={`h-full w-full object-contain transition duration-300 group-hover:scale-105 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
           />
           
@@ -283,6 +287,7 @@ export default function ProductCard({ product, wishlistMode = false, onRemoveFro
               type="button"
               onClick={(e) => handleUpdateCart(e, 1)}
               disabled={isOutOfStock}
+              aria-label={isOutOfStock ? `${product.name} is unavailable` : `Add ${product.name} to cart`}
               className={`w-full flex h-[40px] items-center justify-center gap-1.5 rounded-md px-3 text-sm font-bold transition-colors ${
                 isOutOfStock
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"

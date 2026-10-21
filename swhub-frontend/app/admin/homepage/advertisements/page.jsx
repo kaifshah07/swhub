@@ -61,7 +61,7 @@ export default function AdvertisementsPage() {
 
         <button
           onClick={handleAdd}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-lg shadow transition"
+          className="bg-[#0000FF] hover:bg-[#0059FF] text-white font-semibold px-5 py-2.5 rounded-lg shadow transition"
         >
           + Add Advertisement
         </button>

@@ -76,12 +76,16 @@ export default function BrandSlider() {
                   <img
                     src={brand.image}
                     alt={brand.name}
+                    width={80}
+                    height={80}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover rounded-xl group-hover:scale-110 transition duration-500"
                   />
                 </div>
                 <div className="text-center mt-auto w-full">
                   <h3 className="font-bold text-xs sm:text-sm text-slate-900">{brand.name}</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">{brand.category}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">{brand.category}</p>
                   <p className="mt-1.5 text-[10px] font-bold text-primary bg-slate-50 px-2 py-0.5 rounded-full inline-block">
                     {brand.offer}
                   </p>

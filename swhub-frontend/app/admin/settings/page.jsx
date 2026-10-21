@@ -76,7 +76,7 @@ export default function AdminSettingsPage() {
                   required
                   value={form.websiteName}
                   onChange={(e) => setForm({ ...form, websiteName: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
 
@@ -87,7 +87,7 @@ export default function AdminSettingsPage() {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
 
@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
                   required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
 
@@ -109,7 +109,7 @@ export default function AdminSettingsPage() {
                   required
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={form.seoTitle || ""}
                   onChange={(e) => setForm({ ...form, seoTitle: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
 
@@ -183,7 +183,7 @@ export default function AdminSettingsPage() {
                   rows={2}
                   value={form.seoDescription || ""}
                   onChange={(e) => setForm({ ...form, seoDescription: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
 
@@ -193,7 +193,7 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={form.footerText || ""}
                   onChange={(e) => setForm({ ...form, footerText: e.target.value })}
-                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#0000FF]"
                 />
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function AdminSettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl shadow transition disabled:opacity-50"
+              className="bg-[#0000FF] hover:bg-[#0059FF] text-white font-bold px-8 py-3 rounded-xl shadow transition disabled:opacity-50"
             >
               {saving ? "Saving Changes..." : "Save Settings"}
             </button>

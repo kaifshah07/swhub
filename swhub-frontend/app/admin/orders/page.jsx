@@ -41,17 +41,19 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [paymentFilter, setPaymentFilter] = useState("ALL");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     loadOrders();
-  }, [statusFilter]);
+  }, [statusFilter, paymentFilter]);
 
   async function loadOrders() {
     try {
       setLoading(true);
       const params = {};
       if (statusFilter !== "ALL") params.orderStatus = statusFilter;
+      if (paymentFilter !== "ALL") params.paymentStatus = paymentFilter;
       if (search.trim()) params.search = search.trim();
 
       const res = await api.get("/orders", { params });
@@ -156,6 +158,26 @@ export default function AdminOrdersPage() {
         ))}
       </div>
 
+      {/* PAYMENT FILTER TABS */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+          Payment:
+        </span>
+        {["ALL", ...paymentStatuses].map((pst) => (
+          <button
+            key={pst}
+            onClick={() => setPaymentFilter(pst)}
+            className={`shrink-0 rounded-xl px-3 py-1.5 text-[11px] font-bold transition ${
+              paymentFilter === pst
+                ? "bg-[#0000FF] text-white shadow-xs"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {pst === "ALL" ? "All Payments" : pst}
+          </button>
+        ))}
+      </div>
+
       {/* SEARCH BAR */}
       <div className="flex gap-3">
         <div className="relative flex-1">
@@ -165,16 +187,16 @@ export default function AdminOrdersPage() {
           />
           <input
             type="text"
-            placeholder="Search by order number (#BAL-...) or customer name..."
+            placeholder="Search by order number (#ORD-...) or customer name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && loadOrders()}
-            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs outline-none transition focus:border-[#0000FF] focus:ring-2 focus:ring-[#0000FF]/20"
           />
         </div>
         <button
           onClick={loadOrders}
-          className="rounded-2xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition"
+          className="rounded-2xl bg-gradient-to-r from-[#0000FF] to-[#0059FF] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-95 transition"
         >
           Search
         </button>
@@ -183,12 +205,12 @@ export default function AdminOrdersPage() {
       {/* ORDERS LIST / TABLE */}
       {loading ? (
         <div className="rounded-3xl border border-slate-200/80 bg-white p-16 text-center shadow-sm">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-orange-500 border-t-transparent mb-3" />
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#0000FF] border-t-transparent mb-3" />
           <p className="text-xs font-bold text-slate-500">Loading orders...</p>
         </div>
       ) : orders.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-16 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 mb-3">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#0000FF] mb-3">
             <ShoppingBag size={28} />
           </div>
           <h3 className="text-base font-bold text-slate-800">No orders found</h3>
@@ -294,8 +316,22 @@ export default function AdminOrdersPage() {
                         {orderStatuses
                           .filter((s) => s !== "ALL")
                           .map((st) => (
-                            <option key={st} value={st} className="bg-white text-slate-800">
+                            <option
+                              key={st}
+                              value={st}
+                              disabled={
+                                o.paymentMethod === "ONLINE" &&
+                                o.paymentStatus !== "PAID" &&
+                                (st === "SHIPPED" || st === "DELIVERED")
+                              }
+                              className="bg-white text-slate-800"
+                            >
                               {st}
+                              {o.paymentMethod === "ONLINE" &&
+                              o.paymentStatus !== "PAID" &&
+                              (st === "SHIPPED" || st === "DELIVERED")
+                                ? " (Unpaid)"
+                                : ""}
                             </option>
                           ))}
                       </select>
@@ -374,8 +410,21 @@ export default function AdminOrdersPage() {
                     {orderStatuses
                       .filter((s) => s !== "ALL")
                       .map((st) => (
-                        <option key={st} value={st}>
+                        <option
+                          key={st}
+                          value={st}
+                          disabled={
+                            selectedOrder.paymentMethod === "ONLINE" &&
+                            selectedOrder.paymentStatus !== "PAID" &&
+                            (st === "SHIPPED" || st === "DELIVERED")
+                          }
+                        >
                           {st}
+                          {selectedOrder.paymentMethod === "ONLINE" &&
+                          selectedOrder.paymentStatus !== "PAID" &&
+                          (st === "SHIPPED" || st === "DELIVERED")
+                            ? " (Payment Required)"
+                            : ""}
                         </option>
                       ))}
                   </select>
@@ -393,8 +442,21 @@ export default function AdminOrdersPage() {
                     className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-slate-800 outline-none"
                   >
                     {paymentStatuses.map((pst) => (
-                      <option key={pst} value={pst}>
+                      <option
+                        key={pst}
+                        value={pst}
+                        disabled={
+                          selectedOrder.paymentMethod === "ONLINE" &&
+                          pst === "PAID" &&
+                          selectedOrder.paymentStatus !== "PAID"
+                        }
+                      >
                         {pst}
+                        {selectedOrder.paymentMethod === "ONLINE" &&
+                        pst === "PAID" &&
+                        selectedOrder.paymentStatus !== "PAID"
+                          ? " (Gateway Required)"
+                          : ""}
                       </option>
                     ))}
                   </select>
@@ -405,7 +467,7 @@ export default function AdminOrdersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-slate-200/80 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                    <User size={15} className="text-orange-500" />
+                    <User size={15} className="text-[#0000FF]" />
                     <span>Customer Information</span>
                   </div>
                   <p className="font-bold text-slate-900 text-sm">
@@ -494,7 +556,7 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm font-black text-slate-900">
                   <span>Grand Total</span>
-                  <span className="text-orange-600 text-lg">
+                  <span className="text-[#0000FF] text-lg font-black">
                     ₹{Number(selectedOrder.totalAmount).toFixed(2)}
                   </span>
                 </div>

@@ -70,11 +70,11 @@ export default function AdminCustomersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && loadCustomers()}
-          className="bg-white border rounded-lg px-4 py-2 text-sm flex-1 focus:ring-2 focus:ring-orange-500 outline-none"
+          className="bg-white border rounded-lg px-4 py-2 text-sm flex-1 focus:ring-2 focus:ring-[#0000FF] outline-none"
         />
         <button
           onClick={loadCustomers}
-          className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2 rounded-lg"
+          className="bg-[#0000FF] hover:bg-[#0059FF] text-white text-sm font-semibold px-5 py-2 rounded-lg transition"
         >
           Search
         </button>

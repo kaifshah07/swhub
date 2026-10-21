@@ -10,7 +10,7 @@ import {
   Package,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { openCustomerAuthModal } from "@/lib/authModal";
+import { openCustomerAuthModal, isTokenExpired, clearCustomerSession } from "@/lib/authModal";
 
 type CartItem = {
   productId: number;
@@ -50,7 +50,10 @@ export default function UserActions() {
 
     function loadCustomer() {
       const token = localStorage.getItem("customer_token");
-      if (!token) {
+      if (!token || isTokenExpired(token)) {
+        if (token && isTokenExpired(token)) {
+          clearCustomerSession();
+        }
         setCustomer(null);
         setIsLoggedIn(false);
         return;
@@ -132,6 +135,8 @@ export default function UserActions() {
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="User Account Menu"
+            aria-expanded={menuOpen}
             className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-50"
           >
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[10px] font-black text-white">
@@ -185,6 +190,7 @@ export default function UserActions() {
       ) : (
         <button
           onClick={() => openCustomerAuthModal({ defaultTab: "login" })}
+          aria-label="Sign In"
           className="flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 px-4 py-2 text-xs font-bold text-white transition shadow-sm"
         >
           <User size={14} />

@@ -353,24 +353,28 @@ export class CustomerAuthService {
       throw new Error("Google ID token is required");
     }
 
-    const clientId = env.GOOGLE_CLIENT_ID;
-    if (!clientId) {
+    const cleanClientId = (env.GOOGLE_CLIENT_ID || "").replace(/[\r\n\s]+/g, "").trim();
+    if (!cleanClientId) {
       throw new Error(
         "Google authentication is not yet configured on the server. GOOGLE_CLIENT_ID is missing."
       );
     }
 
-    const client = new OAuth2Client(clientId);
+    const client = new OAuth2Client(cleanClientId);
 
     let ticket;
     try {
+      const allowedAudiences = Array.from(
+        new Set([cleanClientId, (env.GOOGLE_CLIENT_ID || "").trim()].filter(Boolean))
+      );
+
       ticket = await client.verifyIdToken({
         idToken: idToken.trim(),
-        audience: clientId,
+        audience: allowedAudiences,
       });
     } catch (err: any) {
       console.error("Google verifyIdToken error:", err?.message || err);
-      throw new Error("Invalid or expired Google token");
+      throw new Error(`Google token verification failed: ${err?.message || "Invalid or expired token"}`);
     }
 
     const payload = ticket.getPayload();
