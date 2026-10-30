@@ -12,13 +12,12 @@ const SOCIAL_LINKS = [
 ];
 
 const CATEGORY_LINKS = [
-  { name: "Groceries & Staples", href: "/categories/groceries-staples" },
-  { name: "Beverages & Juices", href: "/categories/beverages-juices" },
-  { name: "Crockery & Kitchenware", href: "/categories/crockery-kitchenware" },
-  { name: "Cleaning Supplies", href: "/categories/cleaning-household" },
-  { name: "Personal Care & Hygiene", href: "/categories/personal-care" },
-  { name: "Packaged Foods & Snacks", href: "/categories/packaged-foods" },
-  { name: "Stationery & Office", href: "/categories/stationery-office" },
+  { name: "Security & Digital Safes", href: "/categories/security-digital-safes" },
+  { name: "Kitchen Appliances", href: "/categories/kitchen-appliances" },
+  { name: "Cookware & Kitchenware", href: "/categories/cookware-kitchenware" },
+  { name: "Dining & Tableware", href: "/categories/dining-tableware" },
+  { name: "Home & Living Appliances", href: "/categories/home-living-appliances" },
+  { name: "Electronics & Audio", href: "/categories/electronics-audio" },
 ];
 
 export default function Footer() {

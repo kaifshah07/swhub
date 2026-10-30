@@ -12,13 +12,12 @@ type Category = {
 };
 
 const DEFAULT_DEPARTMENTS = [
-  { name: "Groceries & Staples", slug: "groceries-staples" },
-  { name: "Beverages & Juices", slug: "beverages-juices" },
-  { name: "Crockery & Kitchenware", slug: "crockery-kitchenware" },
-  { name: "Personal Care", slug: "personal-care" },
-  { name: "Cleaning & Household", slug: "cleaning-household" },
-  { name: "Packaged Foods", slug: "packaged-foods" },
-  { name: "Stationery & Office", slug: "stationery-office" },
+  { name: "Security & Digital Safes", slug: "security-digital-safes" },
+  { name: "Kitchen Appliances", slug: "kitchen-appliances" },
+  { name: "Cookware & Kitchenware", slug: "cookware-kitchenware" },
+  { name: "Dining & Tableware", slug: "dining-tableware" },
+  { name: "Home & Living Appliances", slug: "home-living-appliances" },
+  { name: "Electronics & Audio", slug: "electronics-audio" },
 ];
 
 export default function MegaMenu() {
