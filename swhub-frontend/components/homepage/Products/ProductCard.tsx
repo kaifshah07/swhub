@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Heart, ShoppingCart, Minus, Plus } from "lucide-react";
+import { Heart, ShoppingCart, Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
@@ -9,6 +9,7 @@ export interface ProductCardProps {
     id: number;
     name: string;
     image: string;
+    images?: string[];
     price: number;
     originalPrice: number;
     discount: number;
@@ -27,10 +28,40 @@ export interface ProductCardProps {
 export default function ProductCard({ product, wishlistMode = false, onRemoveFromWishlist }: ProductCardProps) {
   const [liked, setLiked] = useState(false);
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
   
   const stock = product.stock ?? 0;
   const isOutOfStock = stock === 0;
   const isLowStock = stock > 0 && stock <= 5;
+
+  // Compile 2-3 images for card slide preview
+  const cardImages: string[] = [];
+  if (product.image) cardImages.push(product.image);
+  if (Array.isArray(product.images)) {
+    product.images.forEach((img) => {
+      if (img && !cardImages.includes(img)) cardImages.push(img);
+    });
+  }
+  if (cardImages.length > 0 && cardImages[0].includes("/images/products/")) {
+    const base = cardImages[0].replace(/-[123]\.png$/, "").replace(/\.png$/, "");
+    const expected = [`${base}-1.png`, `${base}-2.png`, `${base}-3.png`];
+    expected.forEach((url) => {
+      if (!cardImages.includes(url)) cardImages.push(url);
+    });
+  }
+  if (cardImages.length === 0) cardImages.push("/placeholder.png");
+
+  function handleCardPrevImg(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveImgIndex((prev) => (prev - 1 + cardImages.length) % cardImages.length);
+  }
+
+  function handleCardNextImg(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveImgIndex((prev) => (prev + 1) % cardImages.length);
+  }
 
   useEffect(() => {
     if (wishlistMode) {
@@ -194,7 +225,7 @@ export default function ProductCard({ product, wishlistMode = false, onRemoveFro
       </button>
 
       {/* Product Image */}
-      <Link href={`/products/${product.id}`} className="block relative">
+      <Link href={`/products/${product.id}`} className="block relative group/img">
         <div className="aspect-square overflow-hidden bg-white flex items-center justify-center p-3 relative">
           
           {/* MARKETING BADGE */}
@@ -203,14 +234,48 @@ export default function ProductCard({ product, wishlistMode = false, onRemoveFro
           </div>
 
           <img
-            src={product.image}
+            src={cardImages[activeImgIndex] || product.image}
             alt={product.name}
-            width={200}
-            height={200}
+            width={300}
+            height={300}
             loading="lazy"
             decoding="async"
-            className={`h-full w-full object-contain transition duration-300 group-hover:scale-105 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
+            className={`h-full w-full object-contain transition duration-300 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
           />
+
+          {/* Slide Buttons on Product Card (Desktop hover & Mobile) */}
+          {cardImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handleCardPrevImg}
+                aria-label="Previous image"
+                className="absolute left-1.5 top-1/2 -translate-y-1/2 z-25 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm opacity-0 group-hover/img:opacity-100 hover:bg-white hover:scale-110 active:scale-95 transition-all"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={handleCardNextImg}
+                aria-label="Next image"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 z-25 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm opacity-0 group-hover/img:opacity-100 hover:bg-white hover:scale-110 active:scale-95 transition-all"
+              >
+                <ChevronRight size={16} />
+              </button>
+
+              {/* Dot Indicators */}
+              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 z-20 pointer-events-none">
+                {cardImages.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === activeImgIndex ? "w-3.5 bg-primary" : "w-1.5 bg-slate-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
           
           {/* SOLD OUT OVERLAY */}
           {isOutOfStock && (

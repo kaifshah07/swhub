@@ -56,11 +56,23 @@ export class PaymentService {
     }
 
     // Create Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: "INR",
-      receipt: order.orderNumber,
-    });
+    let razorpayOrder;
+    try {
+      razorpayOrder = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: "INR",
+        receipt: order.orderNumber,
+      });
+    } catch (rzpErr: any) {
+      console.error("Razorpay order creation error:", rzpErr);
+      const desc = rzpErr?.error?.description || rzpErr?.description || rzpErr?.message;
+      if (rzpErr?.statusCode === 401 || (desc && /auth|key/i.test(desc))) {
+        throw new Error(
+          "Razorpay authentication failed (401). Your RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is invalid or expired. Please update your keys in Razorpay Dashboard and server environment variables."
+        );
+      }
+      throw new Error(desc || "Failed to create Razorpay payment order");
+    }
 
     // If an existing Payment record is attached (e.g. was COD or unlinked), update it
     if (order.payment) {

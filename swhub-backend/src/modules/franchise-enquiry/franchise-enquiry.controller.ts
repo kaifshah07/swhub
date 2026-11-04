@@ -7,6 +7,17 @@ export class FranchiseEnquiryController {
     res: Response
   ) {
     try {
+      const { fullName, mobile, email, city, state } = req.body || {};
+      if (!fullName || typeof fullName !== "string" || !fullName.trim() ||
+          !mobile || typeof mobile !== "string" || !mobile.trim() ||
+          !email || typeof email !== "string" || !email.trim() ||
+          !city || typeof city !== "string" || !city.trim() ||
+          !state || typeof state !== "string" || !state.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Full name, mobile, email, city, and state are required fields",
+        });
+      }
       const enquiry =
         await FranchiseEnquiryService.create(req.body);
 

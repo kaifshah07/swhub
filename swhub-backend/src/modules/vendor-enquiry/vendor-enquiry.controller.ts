@@ -4,6 +4,16 @@ import { VendorEnquiryService } from "./vendor-enquiry.service";
 export class VendorEnquiryController {
   static async create(req: Request, res: Response) {
     try {
+      const { name, mobile, city, state } = req.body || {};
+      if (!name || typeof name !== "string" || !name.trim() ||
+          !mobile || typeof mobile !== "string" || !mobile.trim() ||
+          !city || typeof city !== "string" || !city.trim() ||
+          !state || typeof state !== "string" || !state.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Name, mobile, city, and state are required fields",
+        });
+      }
       const enquiry = await VendorEnquiryService.create(req.body);
 
       return res.status(201).json({

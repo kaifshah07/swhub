@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { API_URL, productImageUrl, fetchWithTimeout } from "@/lib/api";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { Flame, ArrowRight, ShoppingCart } from "lucide-react";
+import { Flame, ArrowRight, ShoppingCart, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
 type FlashProduct = {
   id: number;
@@ -76,6 +76,19 @@ const RETAIL_FALLBACK_FLASH: FlashProduct[] = [
 export default function FlashSale() {
   const [products, setProducts] = useState<FlashProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: -320, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: 320, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     async function loadFlashSaleProducts() {
@@ -179,7 +192,7 @@ export default function FlashSale() {
     <section className="w-full bg-gradient-to-r from-[#ff7373] via-[#ffa86b] to-[#f6cb65] py-8 sm:py-10">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
         {/* Header Strip */}
-        <div className="mb-6 sm:mb-8 flex items-center justify-between gap-4">
+        <div className="mb-5 sm:mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#e60012] text-white shadow-sm shrink-0">
               <Flame size={22} className="fill-white" />
@@ -195,86 +208,147 @@ export default function FlashSale() {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-700/85 font-medium mt-0.5">
-                Unbeatable prices on high-demand essentials
+                Unbeatable wholesale prices — swipe to explore deals
               </p>
             </div>
           </div>
 
-          <Link
-            href="/products?type=flash-sale"
-            className="flex items-center gap-1.5 rounded-full bg-[#e60012] px-5 sm:px-6 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-red-700 transition shadow-sm shrink-0"
-          >
-            <span>View All</span>
-            <ArrowRight size={14} className="stroke-[2.5]" />
-          </Link>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 gap-3.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
-          {displayProducts.map((product) => (
-            <div
-              key={product.id}
-              className="group overflow-hidden rounded-2xl bg-white p-3 sm:p-3.5 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full border border-white/70"
-            >
-              <div className="flex flex-col">
-                <Link href={`/products/${product.id}`} className="block">
-                  {/* Top Discount Badge */}
-                  <div className="flex items-center justify-between mb-2">
-                    {product.discount > 0 ? (
-                      <span className="rounded-md bg-[#e60012] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black uppercase tracking-wide text-white shadow-xs">
-                        {product.discount}% OFF
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-
-                  {/* Product Image */}
-                  <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center p-2">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-cover rounded-lg transition duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Info */}
-                  <div className="mt-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
-                      {product.brand}
-                    </p>
-                    <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold text-slate-800 leading-snug group-hover:text-red-600 transition min-h-[34px] sm:min-h-[38px] mt-1">
-                      {product.name}
-                    </h3>
-                  </div>
-                </Link>
-
-                <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="font-extrabold text-sm sm:text-base text-red-600">
-                    ₹{product.price}
-                  </span>
-
-                  {product.originalPrice > product.price && (
-                    <span className="text-[11px] text-slate-400 line-through">
-                      ₹{product.originalPrice}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Cyan Quick Add Button */}
+          <div className="flex items-center gap-2.5">
+            {/* Slider Navigation Buttons */}
+            <div className="hidden sm:flex items-center gap-1.5 mr-1">
               <button
                 type="button"
-                onClick={(e) => handleAddToCart(product, e)}
-                aria-label={`Add ${product.name} to cart`}
-                className="mt-3 w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#0099ff] hover:bg-[#0088ee] py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all shadow-xs active:scale-[0.98]"
+                onClick={scrollLeft}
+                aria-label="Previous flash deals"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow-sm hover:bg-white hover:scale-105 active:scale-95 transition"
               >
-                <ShoppingCart size={14} />
-                <span>Quick Add</span>
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={scrollRight}
+                aria-label="Next flash deals"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow-sm hover:bg-white hover:scale-105 active:scale-95 transition"
+              >
+                <ChevronRight size={20} />
               </button>
             </div>
-          ))}
+
+            <Link
+              href="/products?type=flash-sale"
+              className="flex items-center gap-1.5 rounded-full bg-[#e60012] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white hover:bg-red-700 transition shadow-sm shrink-0"
+            >
+              <span>View All</span>
+              <ArrowRight size={14} className="stroke-[2.5]" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Product Slider (Horizontal Scroll) */}
+        <div className="relative group/slider">
+          {/* Floating Mobile/Tablet Prev/Next Arrows */}
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Previous"
+            className="sm:hidden absolute -left-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={scrollRight}
+            aria-label="Next"
+            className="sm:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md"
+          >
+            <ChevronRight size={18} />
+          </button>
+
+          <div
+            ref={sliderRef}
+            className="flex gap-4 overflow-x-auto scroll-smooth pb-3 pt-1 snap-x snap-mandatory scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {displayProducts.map((product) => (
+              <div
+                key={product.id}
+                className="w-[210px] sm:w-[230px] md:w-[250px] shrink-0 snap-start overflow-hidden rounded-2xl bg-white p-3 sm:p-3.5 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between border border-white/70"
+              >
+                <div className="flex flex-col">
+                  <Link href={`/products/${product.id}`} className="block">
+                    {/* Top Discount Badge */}
+                    <div className="flex items-center justify-between mb-2">
+                      {product.discount > 0 ? (
+                        <span className="rounded-md bg-[#e60012] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black uppercase tracking-wide text-white shadow-xs">
+                          {product.discount}% OFF
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                    </div>
+
+                    {/* Product Image (Fixed 1:1 Square, contain, no stretch) */}
+                    <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center p-2.5">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-contain rounded-lg transition duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="mt-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        {product.brand}
+                      </p>
+                      <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold text-slate-800 leading-snug group-hover:text-red-600 transition min-h-[34px] sm:min-h-[38px] mt-1">
+                        {product.name}
+                      </h3>
+                    </div>
+                  </Link>
+
+                  <div className="mt-2 flex items-baseline gap-1.5">
+                    <span className="font-extrabold text-sm sm:text-base text-red-600">
+                      ₹{product.price}
+                    </span>
+
+                    {product.originalPrice > product.price && (
+                      <span className="text-[11px] text-slate-400 line-through">
+                        ₹{product.originalPrice}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cyan Quick Add Button */}
+                <button
+                  type="button"
+                  onClick={(e) => handleAddToCart(product, e)}
+                  aria-label={`Add ${product.name} to cart`}
+                  className="mt-3 w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#0099ff] hover:bg-[#0088ee] py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all shadow-xs active:scale-[0.98]"
+                >
+                  <ShoppingCart size={14} />
+                  <span>Quick Add</span>
+                </button>
+              </div>
+            ))}
+
+            {/* View All Deals End Card */}
+            <div className="w-[180px] sm:w-[200px] shrink-0 snap-start overflow-hidden rounded-2xl bg-white/80 backdrop-blur-sm p-5 shadow-sm hover:shadow-lg transition-all flex flex-col items-center justify-center text-center border-2 border-dashed border-red-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-[#e60012] mb-3 shadow-xs">
+                <Flame size={28} />
+              </div>
+              <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">More Steals</h3>
+              <p className="text-xs text-slate-600 mt-1 mb-4">Explore all limited-time discounts</p>
+              <Link
+                href="/products?type=flash-sale"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#e60012] px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition shadow-xs"
+              >
+                <span>View All</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

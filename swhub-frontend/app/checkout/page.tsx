@@ -46,7 +46,7 @@ export default function CheckoutPage() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "ONLINE">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"ONLINE">("ONLINE");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -313,15 +313,6 @@ export default function CheckoutPage() {
       const orderData = result.data?.order || result.data;
       const orderId = orderData.id;
 
-      // Handle CASH ON DELIVERY
-      if (paymentMethod === "COD") {
-        localStorage.removeItem("swhub_cart");
-        window.dispatchEvent(new Event("cartUpdated"));
-        toast.success("Order placed successfully! 🎉");
-        router.push(`/order-success?orderId=${orderId}`);
-        return;
-      }
-
       // Handle ONLINE PAYMENT (RAZORPAY)
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
@@ -357,7 +348,12 @@ export default function CheckoutPage() {
       }
 
       if (!paymentRes.ok || !paymentJson.success) {
-        throw new Error(paymentJson.message || "Failed to initialize online payment");
+        const errorDesc =
+          paymentJson.message ||
+          paymentJson.error?.description ||
+          paymentJson.error ||
+          "Failed to initialize online payment";
+        throw new Error(errorDesc);
       }
 
       const { paymentId, razorpayOrderId, amount, currency, key } = paymentJson.data;
@@ -610,75 +606,49 @@ export default function CheckoutPage() {
 
             {/* Payment Section */}
             <section className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-xs">
-              <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-900">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">2</span>
-                Payment Method
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="flex items-center gap-3 text-xl font-black text-slate-900">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">2</span>
+                  Payment Method
+                </h2>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+                  <ShieldCheck size={14} />
+                  <span>100% Secure Online Payment</span>
+                </span>
+              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                {/* ONLINE */}
-                <label 
-                  className={`relative cursor-pointer rounded-2xl border-2 p-5 transition-all ${
-                    paymentMethod === "ONLINE" 
-                      ? "border-primary bg-blue-50/30" 
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }`}
-                >
-                  <input 
-                    type="radio" 
-                    name="payment" 
-                    value="ONLINE"
-                    checked={paymentMethod === "ONLINE"}
-                    onChange={() => setPaymentMethod("ONLINE")}
-                    className="sr-only"
-                  />
+              {/* ONLINE PAYMENT EXCLUSIVE */}
+              <div className="rounded-2xl border-2 border-primary bg-blue-50/20 p-5 sm:p-6 transition-all shadow-xs">
+                <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${paymentMethod === "ONLINE" ? "bg-primary text-white" : "bg-neutral-100 text-neutral-500"}`}>
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-xs">
                       <CreditCard size={24} />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900">Pay Online</h3>
-                      <p className="text-xs text-neutral-500 mt-0.5">UPI, Cards, Net</p>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900">Online Payment</h3>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md">Instant</span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-neutral-600 mt-1">
+                        Pay securely with UPI (GPay, PhonePe, Paytm), Debit/Credit Cards & Net Banking.
+                      </p>
                     </div>
                   </div>
-                  {paymentMethod === "ONLINE" && (
-                    <div className="absolute right-4 top-4 text-primary">
-                      <CheckCircle2 size={20} />
-                    </div>
-                  )}
-                </label>
+                  <div className="text-primary shrink-0">
+                    <CheckCircle2 size={24} className="fill-primary text-white" />
+                  </div>
+                </div>
 
-                {/* COD */}
-                <label 
-                  className={`relative cursor-pointer rounded-2xl border-2 p-5 transition-all ${
-                    paymentMethod === "COD" 
-                      ? "border-primary bg-blue-50/30" 
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }`}
-                >
-                  <input 
-                    type="radio" 
-                    name="payment" 
-                    value="COD"
-                    checked={paymentMethod === "COD"}
-                    onChange={() => setPaymentMethod("COD")}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${paymentMethod === "COD" ? "bg-primary text-white" : "bg-neutral-100 text-neutral-500"}`}>
-                      <Banknote size={24} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900">COD</h3>
-                      <p className="text-xs text-neutral-500 mt-0.5">Pay at door</p>
-                    </div>
+                <div className="mt-4 pt-4 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+                  <span className="font-semibold text-slate-700">Supported payment channels:</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="rounded-md bg-white px-2.5 py-1 font-bold text-[11px] text-slate-800 border border-slate-200 shadow-2xs">UPI</span>
+                    <span className="rounded-md bg-white px-2.5 py-1 font-bold text-[11px] text-slate-800 border border-slate-200 shadow-2xs">Google Pay</span>
+                    <span className="rounded-md bg-white px-2.5 py-1 font-bold text-[11px] text-slate-800 border border-slate-200 shadow-2xs">PhonePe</span>
+                    <span className="rounded-md bg-white px-2.5 py-1 font-bold text-[11px] text-slate-800 border border-slate-200 shadow-2xs">Visa / MC / RuPay</span>
+                    <span className="rounded-md bg-white px-2.5 py-1 font-bold text-[11px] text-slate-800 border border-slate-200 shadow-2xs">NetBanking</span>
                   </div>
-                  {paymentMethod === "COD" && (
-                    <div className="absolute right-4 top-4 text-primary">
-                      <CheckCircle2 size={20} />
-                    </div>
-                  )}
-                </label>
+                </div>
               </div>
 
               {/* Trust Layer */}
@@ -804,9 +774,10 @@ export default function CheckoutPage() {
                   <button
                     onClick={placeOrder}
                     disabled={loading}
-                    className="flex w-full items-center justify-center rounded-2xl bg-primary py-4 text-base font-bold text-white shadow-xl shadow-primary/25 transition-all hover:bg-blue-600 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-base font-bold text-white shadow-xl shadow-primary/25 transition-all hover:bg-blue-600 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
                   >
-                    {loading ? "Processing..." : "Place Order Securely"}
+                    <Lock size={16} />
+                    <span>{loading ? "Initializing Payment..." : `Pay ₹${total} Securely`}</span>
                   </button>
                 </div>
               </div>
@@ -826,9 +797,10 @@ export default function CheckoutPage() {
           <button
             onClick={placeOrder}
             disabled={loading}
-            className="flex items-center justify-center rounded-xl bg-primary px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/25 transition-all hover:bg-blue-600 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/25 transition-all hover:bg-blue-600 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
           >
-            {loading ? "Processing..." : "Place Order"}
+            <Lock size={15} />
+            <span>{loading ? "Processing..." : `Pay ₹${total}`}</span>
           </button>
         </div>
       </div>

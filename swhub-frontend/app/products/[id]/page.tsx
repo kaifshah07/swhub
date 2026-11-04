@@ -7,7 +7,8 @@ import { API_URL } from "@/lib/api";
 import ProductCard from "@/components/homepage/Products/ProductCard";
 import { 
   Truck, ShieldCheck, RotateCcw, CheckCircle, 
-  Minus, Plus, ShoppingCart, ArrowRight 
+  Minus, Plus, ShoppingCart, ArrowRight,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -170,15 +171,43 @@ export default function ProductPage() {
   const stock = product.stock ?? 0;
   const isOutOfStock = stock === 0;
 
-  // Compile images
-  const images = [];
+  // Compile 2-3 fixed-size images for each product
+  const images: string[] = [];
   if (product.thumbnail) images.push(product.thumbnail);
-  if (product.images?.length > 0) {
-    product.images.forEach((img: any) => {
-      if (img.url !== product.thumbnail) images.push(img.url);
+
+  const rawGallery = product.gallery || product.images || [];
+  if (Array.isArray(rawGallery)) {
+    rawGallery.forEach((item: any) => {
+      const src = typeof item === "string" ? item : (item.image || item.url);
+      if (src && !images.includes(src)) {
+        images.push(src);
+      }
     });
   }
+
+  // Ensure every product with standard catalog image has all 3 views available
+  if (images.length > 0 && typeof images[0] === "string" && images[0].includes("/images/products/")) {
+    const base = images[0].replace(/-[123]\.png$/, "").replace(/\.png$/, "");
+    const expected = [`${base}-1.png`, `${base}-2.png`, `${base}-3.png`];
+    expected.forEach(url => {
+      if (!images.includes(url)) images.push(url);
+    });
+  }
+
   if (images.length === 0) images.push("/placeholder.png");
+
+  // Track active index for slide buttons
+  const currentIndex = Math.max(0, images.indexOf(activeImage));
+
+  const handlePrevImage = () => {
+    const nextIdx = (currentIndex - 1 + images.length) % images.length;
+    setActiveImage(images[nextIdx]);
+  };
+
+  const handleNextImage = () => {
+    const nextIdx = (currentIndex + 1) % images.length;
+    setActiveImage(images[nextIdx]);
+  };
 
   // Format Description
   const highlights = product.description 
@@ -198,28 +227,63 @@ export default function ProductPage() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           
-          {/* SECTION 1: Image Gallery */}
+          {/* SECTION 1: Image Gallery with Slide Buttons */}
           <div className="flex flex-col gap-4">
-            <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-neutral-100 bg-neutral-50">
+            <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-xs flex items-center justify-center p-4 group/gallery">
               <Image 
-                src={activeImage} 
+                src={activeImage || images[0]} 
                 alt={product.name} 
                 fill 
-                className="object-cover" 
+                className="object-contain p-4 transition-all duration-300" 
                 priority
               />
+
+              {/* Prev Slide Button */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    aria-label="Previous product image"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md backdrop-blur-sm border border-slate-200 hover:bg-white hover:scale-105 active:scale-95 transition-all opacity-85 group-hover/gallery:opacity-100 z-10"
+                  >
+                    <ChevronLeft size={22} className="stroke-[2.5]" />
+                  </button>
+
+                  {/* Next Slide Button */}
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    aria-label="Next product image"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md backdrop-blur-sm border border-slate-200 hover:bg-white hover:scale-105 active:scale-95 transition-all opacity-85 group-hover/gallery:opacity-100 z-10"
+                  >
+                    <ChevronRight size={22} className="stroke-[2.5]" />
+                  </button>
+
+                  {/* Slide Indicator Counter Pill */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-slate-900/75 backdrop-blur-sm px-3.5 py-1 text-xs font-bold text-white shadow-xs z-10">
+                    <span>{currentIndex + 1}</span>
+                    <span className="text-white/50">/</span>
+                    <span>{images.length}</span>
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* Thumbnail Strip */}
             {images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => setActiveImage(img)}
-                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                      activeImage === img ? "border-primary" : "border-neutral-100 opacity-70 hover:opacity-100"
+                    aria-label={`Slide to image ${idx + 1}`}
+                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 bg-white transition-all p-1.5 ${
+                      (activeImage || images[0]) === img ? "border-primary shadow-xs ring-2 ring-primary/20 scale-105" : "border-neutral-200 opacity-70 hover:opacity-100"
                     }`}
                   >
-                    <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" />
+                    <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-contain p-1" />
                   </button>
                 ))}
               </div>

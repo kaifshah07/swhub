@@ -148,9 +148,14 @@ export class PaymentController {
       });
     } catch (error: any) {
       console.error("Create Payment Error:", error);
+      const message =
+        error?.message ||
+        error?.error?.description ||
+        error?.description ||
+        "Failed to initialize online payment";
       return res.status(400).json({
         success: false,
-        message: error.message,
+        message,
       });
     }
   }
@@ -204,9 +209,14 @@ export class PaymentController {
       });
     } catch (error: any) {
       console.error("Verify Payment Error:", error);
+      const message =
+        error?.message ||
+        error?.error?.description ||
+        error?.description ||
+        "Payment verification failed";
       return res.status(400).json({
         success: false,
-        message: error.message,
+        message,
       });
     }
   }
