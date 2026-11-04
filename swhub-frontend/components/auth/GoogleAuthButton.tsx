@@ -36,6 +36,10 @@ export default function GoogleAuthButton({
     function initGoogle() {
       if (!window.google?.accounts?.id) return;
       try {
+        if ((window as any).__googleGsiInitialized === clientId) {
+          setScriptLoaded(true);
+          return;
+        }
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: handleCredentialResponse,
@@ -43,6 +47,7 @@ export default function GoogleAuthButton({
           cancel_on_tap_outside: true,
           use_fedcm_for_prompt: true,
         });
+        (window as any).__googleGsiInitialized = clientId;
         setScriptLoaded(true);
       } catch (err) {
         console.warn("Google initialization warning:", err);

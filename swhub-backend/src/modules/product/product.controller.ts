@@ -83,6 +83,7 @@ static async create(req: Request, res: Response) {
         });
       }
 
+      res.setHeader("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300");
       return res.json({
         success: true,
         data: product,
@@ -171,7 +172,7 @@ static async create(req: Request, res: Response) {
     try {
       const products =
         await ProductService.getPublicProducts(req.query);
-
+      res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=180");
       return res.json({
         success: true,
         data: products,

@@ -289,8 +289,8 @@ export default function CheckoutPage() {
 
       // Check if session expired or unauthorized
       if (
-        response.status === 401 ||
-        (result.message && /token|expired|unauthorized/i.test(result.message))
+        response.status === 401 &&
+        (!result.message || /token|session|unauthorized|customer/i.test(result.message))
       ) {
         clearCustomerSession();
         setIsAuthenticated(false);
@@ -330,9 +330,12 @@ export default function CheckoutPage() {
 
       const paymentJson = await paymentRes.json().catch(() => ({}));
 
+      // Only trigger session re-login if the customer's JWT token is genuinely rejected
       if (
-        paymentRes.status === 401 ||
-        (paymentJson.message && /token|expired|unauthorized/i.test(paymentJson.message))
+        paymentRes.status === 401 &&
+        paymentJson.message &&
+        /token.*expired|invalid.*token|authorization.*required/i.test(paymentJson.message) &&
+        !/razorpay|gateway|key|secret/i.test(paymentJson.message)
       ) {
         clearCustomerSession();
         setIsAuthenticated(false);
@@ -421,7 +424,12 @@ export default function CheckoutPage() {
       const razorpayInstance = new (window as any).Razorpay(options);
       razorpayInstance.open();
     } catch (error: any) {
-      if (error?.message && /token|expired|unauthorized/i.test(error.message)) {
+      const msg = error?.message || "";
+      const isAuthError =
+        /jwt|session|token.*expired|invalid.*token|customer.*required/i.test(msg) &&
+        !/razorpay|gateway|key|secret/i.test(msg);
+
+      if (isAuthError) {
         clearCustomerSession();
         setIsAuthenticated(false);
         toast.error("Your session has expired. Please sign in again.");
@@ -432,10 +440,10 @@ export default function CheckoutPage() {
             checkAuthAndLoad();
           },
         });
-      } else if (error?.message && error.message.includes("not found")) {
+      } else if (msg.includes("not found")) {
         toast.error("A product in your cart is no longer available. Please clear your cart and add items again.", { duration: 5000 });
       } else {
-        toast.error(error?.message || "Order placement failed");
+        toast.error(msg || "Order placement failed");
       }
     } finally {
       setLoading(false);

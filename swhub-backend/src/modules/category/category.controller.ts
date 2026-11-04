@@ -26,6 +26,7 @@ export class CategoryController {
   static async getAll(req: Request, res: Response) {
     try {
       const categories = await CategoryService.getAll();
+      res.setHeader("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300");
       return res.json({
         success: true,
         data: categories,
