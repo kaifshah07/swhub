@@ -13,6 +13,11 @@ import {
   CreditCard,
   XCircle,
   Clock,
+  Truck,
+  Copy,
+  Check,
+  ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -32,6 +37,26 @@ type OrderItem = {
   product?: Product;
 };
 
+type Shipment = {
+  id: number;
+  orderId: number;
+  shiprocketOrderId?: string | null;
+  shipmentId?: string | null;
+  awbCode?: string | null;
+  courierCompanyId?: number | null;
+  courierName?: string | null;
+  status: string;
+  statusDescription?: string | null;
+  pickupScheduledDate?: string | null;
+  pickupTokenNumber?: string | null;
+  etd?: string | null;
+  labelUrl?: string | null;
+  manifestUrl?: string | null;
+  routingCode?: string | null;
+  trackingHistory?: any;
+  lastTrackedAt?: string | null;
+};
+
 type Order = {
   id: number;
   orderNumber: string;
@@ -42,6 +67,7 @@ type Order = {
   address: string;
   createdAt: string;
   items: OrderItem[];
+  shipment?: Shipment | null;
 };
 
 const statusSteps = [
@@ -60,6 +86,40 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copiedAwb, setCopiedAwb] = useState(false);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+
+  function handleCopyAwb(code: string) {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopiedAwb(true);
+    toast.success("Tracking number copied to clipboard!");
+    setTimeout(() => setCopiedAwb(false), 2500);
+  }
+
+  async function handleRefreshTracking() {
+    if (!order?.shipment?.awbCode) return;
+    try {
+      setTrackingLoading(true);
+      const token = localStorage.getItem("customer_token");
+      const res = await fetch(`${API_URL}/shipping/track/${order.shipment.awbCode}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.shipment) {
+        setOrder((prev) => (prev ? { ...prev, shipment: data.shipment } : null));
+        toast.success("Tracking status refreshed");
+      } else {
+        toast.error(data.message || "Failed to update tracking");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Unable to refresh tracking");
+    } finally {
+      setTrackingLoading(false);
+    }
+  }
 
   useEffect(() => {
     loadOrder();
@@ -362,6 +422,111 @@ export default function OrderDetailsPage() {
         <div className="grid gap-8 md:grid-cols-3">
           {/* Tracking and Items (Left Column) */}
           <div className="md:col-span-2 space-y-8">
+            {/* COURIER DELIVERY & LIVE TRACKING CARD */}
+            {order.shipment && (
+              <div className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80 overflow-hidden relative">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0 text-orange-600">
+                      <Truck size={24} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-black text-slate-900">
+                          {order.shipment.courierName || "Courier Delivery Partner"}
+                        </h2>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {order.shipment.status.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        {order.shipment.statusDescription || "Dispatched via Shiprocket delivery network"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {order.shipment.awbCode && (
+                    <button
+                      onClick={handleRefreshTracking}
+                      disabled={trackingLoading}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-xl transition disabled:opacity-50 self-start sm:self-auto"
+                      title="Refresh live courier tracking"
+                    >
+                      <RefreshCw size={13} className={trackingLoading ? "animate-spin" : ""} />
+                      <span>{trackingLoading ? "Updating..." : "Refresh"}</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                  {/* AWB Code */}
+                  <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                    <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Tracking Number (AWB)
+                    </span>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="font-mono font-bold text-sm text-slate-900 tracking-wider">
+                        {order.shipment.awbCode || "Processing..."}
+                      </span>
+                      {order.shipment.awbCode && (
+                        <button
+                          onClick={() => handleCopyAwb(order.shipment?.awbCode || "")}
+                          className="flex items-center gap-1 text-[11px] font-bold text-orange-600 hover:text-orange-700 transition"
+                          title="Copy AWB number"
+                        >
+                          {copiedAwb ? (
+                            <>
+                              <Check size={13} className="text-emerald-600" />
+                              <span className="text-emerald-600">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={13} />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Estimated Delivery */}
+                  <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                    <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Estimated Delivery
+                    </span>
+                    <p className="font-bold text-sm text-slate-900 mt-1.5">
+                      {order.shipment.etd || "3 - 5 Business Days"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tracking Milestones from Shiprocket Scans */}
+                {Array.isArray(order.shipment.trackingHistory) && order.shipment.trackingHistory.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-slate-100">
+                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">
+                      Courier Activity History
+                    </h3>
+                    <div className="space-y-3 relative pl-4 border-l-2 border-slate-100 ml-1">
+                      {order.shipment.trackingHistory.slice(-4).reverse().map((scan: any, sIdx: number) => (
+                        <div key={sIdx} className="relative">
+                          <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-orange-500 ring-4 ring-white" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">
+                              {scan.activity || scan.status}
+                            </p>
+                            <p className="text-[11px] text-slate-400 font-medium">
+                              {scan.location ? `${scan.location} • ` : ""}{scan.date}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Tracking Tracker */}
             <div className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm border border-slate-200/80">
               <h2 className="text-lg font-black text-slate-900 mb-6">Order Tracking</h2>

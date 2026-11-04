@@ -41,4 +41,19 @@ export const env = {
   GOOGLE_CLIENT_SECRET: (process.env.GOOGLE_CLIENT_SECRET || "")
     .replace(/[\r\n\s]+/g, "")
     .trim(),
+
+  // Shiprocket shipping & delivery provider
+  SHIPROCKET_ENABLED: process.env.SHIPROCKET_ENABLED === "true",
+  SHIPROCKET_BASE_URL: (
+    process.env.SHIPROCKET_BASE_URL ||
+    "https://apiv2.shiprocket.in/v1/external"
+  ).trim(),
+  SHIPROCKET_EMAIL: (process.env.SHIPROCKET_EMAIL || "").trim(),
+  SHIPROCKET_PASSWORD: (process.env.SHIPROCKET_PASSWORD || "").trim(),
+  SHIPROCKET_PICKUP_LOCATION: (
+    process.env.SHIPROCKET_PICKUP_LOCATION || "Primary"
+  ).trim(),
+  SHIPROCKET_WEBHOOK_TOKEN: (
+    process.env.SHIPROCKET_WEBHOOK_TOKEN || ""
+  ).trim(),
 };

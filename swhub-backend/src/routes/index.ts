@@ -25,6 +25,7 @@ import homepageAdvertisementRoutes from "../modules/homepage-advertisement/homep
 import homepageSectionRoutes from "../modules/homepage-section/homepage-section.routes";
 import homepageProductRoutes from "../modules/homepage-product/homepage-product.routes";
 import trustFeatureRoutes from "../modules/trust-feature/trust-feature.routes";
+import shippingRoutes from "../modules/shipping/shipping.routes";
 
 
 const router = Router();
@@ -68,5 +69,6 @@ router.use("/homepage/sections", homepageSectionRoutes);
 router.use("/homepage/products", homepageProductRoutes);
 router.use("/admin/homepage/trust-features", trustFeatureRoutes);
 router.use("/homepage/trust-features", trustFeatureRoutes);
+router.use("/shipping", shippingRoutes);
 
 export default router;

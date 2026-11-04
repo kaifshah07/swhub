@@ -143,6 +143,7 @@ export class OrderService {
           },
           include: {
             customer: true,
+        shipment: true,
             items: {
               include: {
                 product: true,
@@ -209,6 +210,7 @@ export class OrderService {
       },
 
       include: {
+        shipment: true,
 
         items: {
 
@@ -249,6 +251,7 @@ export class OrderService {
       },
 
       include: {
+        shipment: true,
 
         items: {
 
@@ -349,6 +352,7 @@ export class OrderService {
         include: {
 
           customer: true,
+        shipment: true,
 
           items: {
 
@@ -423,6 +427,7 @@ export class OrderService {
       include: {
 
         customer: true,
+        shipment: true,
 
         items: {
 
@@ -671,6 +676,7 @@ export class OrderService {
       customerId,
     },
     include: {
+        shipment: true,
       items: {
         include: {
           product: true,

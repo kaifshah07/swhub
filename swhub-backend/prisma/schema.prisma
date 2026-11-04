@@ -154,6 +154,7 @@ model Order {
   items         OrderItem[]
   customer      Customer?     @relation(fields: [customerId], references: [id])
   payment       Payment?
+  shipment      Shipment?
 
   @@map("orders")
 }
@@ -266,6 +267,36 @@ model Payment {
   order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("payments")
+}
+
+model Shipment {
+  id                  Int             @id @default(autoincrement())
+  orderId             Int             @unique
+  shiprocketOrderId   String?
+  shipmentId          String?         @unique
+  awbCode             String?         @unique
+  courierCompanyId    Int?
+  courierName         String?
+  status              ShipmentStatus  @default(CREATED)
+  statusDescription   String?
+  pickupScheduledDate DateTime?
+  pickupTokenNumber   String?
+  etd                 String?
+  labelUrl            String?
+  manifestUrl         String?
+  routingCode         String?
+  weight              Decimal?        @db.Decimal(8, 3)
+  length              Decimal?        @db.Decimal(8, 2)
+  breadth             Decimal?        @db.Decimal(8, 2)
+  height              Decimal?        @db.Decimal(8, 2)
+  shippingCost        Decimal?        @db.Decimal(10, 2)
+  trackingHistory     Json?
+  lastTrackedAt       DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  order               Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipments")
 }
 
 model VendorEnquiry {
@@ -420,6 +451,21 @@ enum PaymentStatus {
 enum PaymentMethod {
   COD
   ONLINE
+}
+
+enum ShipmentStatus {
+  DRAFT
+  CREATED
+  AWB_ASSIGNED
+  LABEL_GENERATED
+  PICKUP_SCHEDULED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RTO_INITIATED
+  RTO_DELIVERED
+  CANCELLED
 }
 
 enum VendorEnquiryStatus {

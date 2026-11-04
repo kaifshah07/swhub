@@ -20,6 +20,14 @@ import {
   Phone,
   Mail,
   Ticket,
+  Printer,
+  RefreshCw,
+  Copy,
+  Check,
+  ExternalLink,
+  Calendar,
+  AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import { productImageUrl } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -43,6 +51,163 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [paymentFilter, setPaymentFilter] = useState("ALL");
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // Shiprocket shipping state
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingActionMsg, setShippingActionMsg] = useState("");
+  const [dimensions, setDimensions] = useState({
+    weight: 0.5,
+    length: 15,
+    breadth: 12,
+    height: 8,
+  });
+  const [availableCouriers, setAvailableCouriers] = useState([]);
+  const [selectedCourierId, setSelectedCourierId] = useState(null);
+  const [serviceabilityChecked, setServiceabilityChecked] = useState(false);
+  const [copiedAwb, setCopiedAwb] = useState(false);
+
+  // Reset shipping state when selecting a different order
+  useEffect(() => {
+    if (selectedOrder) {
+      setAvailableCouriers([]);
+      setSelectedCourierId(null);
+      setServiceabilityChecked(false);
+      setShippingActionMsg("");
+      if (selectedOrder.shipment) {
+        setDimensions({
+          weight: Number(selectedOrder.shipment.weight) || 0.5,
+          length: Number(selectedOrder.shipment.length) || 15,
+          breadth: Number(selectedOrder.shipment.breadth) || 12,
+          height: Number(selectedOrder.shipment.height) || 8,
+        });
+      }
+    }
+  }, [selectedOrder?.id]);
+
+  async function handleCheckServiceability(orderId) {
+    try {
+      setShippingLoading(true);
+      setShippingActionMsg("Checking courier serviceability & freight rates...");
+      const res = await api.post(`/shipping/orders/${orderId}/serviceability`, dimensions);
+      const data = res.data?.data;
+      if (data?.availableCouriers) {
+        setAvailableCouriers(data.availableCouriers);
+        setServiceabilityChecked(true);
+        if (data.recommendedCourierId) {
+          setSelectedCourierId(data.recommendedCourierId);
+        } else if (data.availableCouriers.length > 0) {
+          setSelectedCourierId(data.availableCouriers[0].courier_company_id);
+        }
+        toast.success(`Found ${data.availableCouriers.length} available courier partners`);
+      } else {
+        toast.error("No serviceability data returned");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to check serviceability");
+    } finally {
+      setShippingLoading(false);
+      setShippingActionMsg("");
+    }
+  }
+
+  async function handleCreateShipment(orderId) {
+    if (!selectedOrder) return;
+    if (selectedOrder.paymentMethod === "ONLINE" && selectedOrder.paymentStatus !== "PAID") {
+      toast.error("Online payment must be marked as PAID before dispatching");
+      return;
+    }
+
+    try {
+      setShippingLoading(true);
+      setShippingActionMsg("Creating Shiprocket order and assigning courier...");
+      const res = await api.post(`/shipping/orders/${orderId}/create`, {
+        ...dimensions,
+        courierId: selectedCourierId,
+        autoAssignAwb: true,
+      });
+
+      toast.success(res.data?.message || "Shipment created successfully!");
+      if (res.data?.shipment) {
+        setSelectedOrder((prev) =>
+          prev ? { ...prev, shipment: res.data.shipment, orderStatus: "SHIPPED" } : null
+        );
+      }
+      loadOrders();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to create shipment");
+    } finally {
+      setShippingLoading(false);
+      setShippingActionMsg("");
+    }
+  }
+
+  async function handleGenerateLabel(shipmentId) {
+    try {
+      setShippingLoading(true);
+      setShippingActionMsg("Generating shipping label PDF...");
+      const res = await api.post(`/shipping/shipments/${shipmentId}/label`);
+      const labelUrl = res.data?.labelUrl;
+      if (labelUrl) {
+        toast.success("Shipping label generated!");
+        window.open(labelUrl, "_blank");
+        setSelectedOrder((prev) =>
+          prev && prev.shipment ? { ...prev, shipment: { ...prev.shipment, labelUrl } } : prev
+        );
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to generate label");
+    } finally {
+      setShippingLoading(false);
+      setShippingActionMsg("");
+    }
+  }
+
+  async function handleSchedulePickup(shipmentId) {
+    try {
+      setShippingLoading(true);
+      setShippingActionMsg("Scheduling courier pickup with warehouse...");
+      const res = await api.post(`/shipping/shipments/${shipmentId}/pickup`);
+      toast.success(res.data?.message || "Pickup scheduled successfully!");
+      if (res.data?.shipment) {
+        setSelectedOrder((prev) =>
+          prev ? { ...prev, shipment: res.data.shipment } : null
+        );
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to schedule pickup");
+    } finally {
+      setShippingLoading(false);
+      setShippingActionMsg("");
+    }
+  }
+
+  async function handleRefreshTracking(awbCode) {
+    try {
+      setShippingLoading(true);
+      setShippingActionMsg("Fetching real-time tracking scans from Shiprocket...");
+      const res = await api.get(`/shipping/track/${awbCode}`);
+      toast.success("Tracking information updated");
+      if (res.data?.shipment) {
+        setSelectedOrder((prev) =>
+          prev ? { ...prev, shipment: res.data.shipment } : null
+        );
+      }
+      loadOrders();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to refresh tracking");
+    } finally {
+      setShippingLoading(false);
+      setShippingActionMsg("");
+    }
+  }
+
+  function handleCopyAwb(code) {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopiedAwb(true);
+    toast.success("AWB copied to clipboard");
+    setTimeout(() => setCopiedAwb(false), 2000);
+  }
 
   useEffect(() => {
     loadOrders();
@@ -461,6 +626,229 @@ export default function AdminOrdersPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* SHIPROCKET SHIPPING & COURIER DISPATCH */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Truck size={17} className="text-orange-600" />
+                    <h3 className="font-bold text-slate-900 text-xs">
+                      Shiprocket Courier & Delivery Management
+                    </h3>
+                  </div>
+
+                  {selectedOrder.shipment?.status && (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200">
+                      {selectedOrder.shipment.status.replace(/_/g, " ")}
+                    </span>
+                  )}
+                </div>
+
+                {selectedOrder.shipment ? (
+                  /* ALREADY DISPATCHED / SHIPMENT CREATED */
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Courier</span>
+                        <p className="font-bold text-slate-900 text-xs mt-0.5">
+                          {selectedOrder.shipment.courierName || "Shiprocket Partner"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">AWB Tracking Number</span>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="font-mono font-bold text-slate-900 text-xs">
+                            {selectedOrder.shipment.awbCode || "Pending"}
+                          </span>
+                          {selectedOrder.shipment.awbCode && (
+                            <button
+                              onClick={() => handleCopyAwb(selectedOrder.shipment.awbCode)}
+                              className="text-orange-600 hover:text-orange-700 text-[11px] font-bold flex items-center gap-0.5"
+                            >
+                              {copiedAwb ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Estimated Delivery</span>
+                        <p className="font-bold text-slate-900 text-xs mt-0.5">
+                          {selectedOrder.shipment.etd || "3-5 Business Days"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ACTION BUTTONS */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2">
+                      {selectedOrder.shipment.labelUrl ? (
+                        <a
+                          href={selectedOrder.shipment.labelUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm"
+                        >
+                          <Printer size={13} />
+                          <span>Print Label</span>
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => handleGenerateLabel(selectedOrder.shipment.id)}
+                          disabled={shippingLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-900 text-white transition disabled:opacity-50"
+                        >
+                          <Printer size={13} />
+                          <span>Generate Label</span>
+                        </button>
+                      )}
+
+                      {!selectedOrder.shipment.pickupScheduledDate ? (
+                        <button
+                          onClick={() => handleSchedulePickup(selectedOrder.shipment.id)}
+                          disabled={shippingLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-orange-600 hover:bg-orange-700 text-white transition disabled:opacity-50"
+                        >
+                          <Calendar size={13} />
+                          <span>Schedule Pickup</span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-200">
+                          <CheckCircle2 size={12} />
+                          <span>Pickup Scheduled ({selectedOrder.shipment.pickupTokenNumber || "Confirmed"})</span>
+                        </span>
+                      )}
+
+                      {selectedOrder.shipment.awbCode && (
+                        <button
+                          onClick={() => handleRefreshTracking(selectedOrder.shipment.awbCode)}
+                          disabled={shippingLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition disabled:opacity-50"
+                        >
+                          <RefreshCw size={12} className={shippingLoading ? "animate-spin" : ""} />
+                          <span>Sync Status</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* NO SHIPMENT YET - DISPATCH FORM */
+                  <div className="space-y-3">
+                    {selectedOrder.paymentMethod === "ONLINE" && selectedOrder.paymentStatus !== "PAID" && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px]">
+                        <AlertCircle size={14} className="shrink-0 text-amber-600" />
+                        <span>This is a prepaid order. Confirm payment (Status: PAID) before dispatching courier.</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Weight (kg)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={dimensions.weight}
+                          onChange={(e) => setDimensions({ ...dimensions, weight: Number(e.target.value) })}
+                          className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-slate-800 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Length (cm)</label>
+                        <input
+                          type="number"
+                          value={dimensions.length}
+                          onChange={(e) => setDimensions({ ...dimensions, length: Number(e.target.value) })}
+                          className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-slate-800 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Width (cm)</label>
+                        <input
+                          type="number"
+                          value={dimensions.breadth}
+                          onChange={(e) => setDimensions({ ...dimensions, breadth: Number(e.target.value) })}
+                          className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-slate-800 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Height (cm)</label>
+                        <input
+                          type="number"
+                          value={dimensions.height}
+                          onChange={(e) => setDimensions({ ...dimensions, height: Number(e.target.value) })}
+                          className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-slate-800 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleCheckServiceability(selectedOrder.id)}
+                        disabled={shippingLoading}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition disabled:opacity-50"
+                      >
+                        <Truck size={13} />
+                        <span>Check Courier Rates</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCreateShipment(selectedOrder.id)}
+                        disabled={shippingLoading || (selectedOrder.paymentMethod === "ONLINE" && selectedOrder.paymentStatus !== "PAID")}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-orange-600 hover:bg-orange-700 text-white transition shadow-sm disabled:opacity-50"
+                      >
+                        <ArrowRight size={13} />
+                        <span>Dispatch via Shiprocket</span>
+                      </button>
+                    </div>
+
+                    {shippingLoading && shippingActionMsg && (
+                      <p className="text-[11px] font-semibold text-orange-600 animate-pulse">
+                        {shippingActionMsg}
+                      </p>
+                    )}
+
+                    {/* AVAILABLE COURIERS LIST */}
+                    {serviceabilityChecked && availableCouriers.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                        <span className="block text-[11px] font-bold text-slate-700">
+                          Select Preferred Courier Partner:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
+                          {availableCouriers.map((c) => (
+                            <label
+                              key={c.courier_company_id}
+                              className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition text-xs ${
+                                selectedCourierId === c.courier_company_id
+                                  ? "border-orange-500 bg-orange-50/60 font-bold"
+                                  : "border-slate-200 hover:bg-slate-50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name="selectedCourier"
+                                  checked={selectedCourierId === c.courier_company_id}
+                                  onChange={() => setSelectedCourierId(c.courier_company_id)}
+                                  className="text-orange-600"
+                                />
+                                <div>
+                                  <p className="font-bold text-slate-800 text-[11px]">{c.courier_name}</p>
+                                  <p className="text-[10px] text-slate-400">ETD: {c.etd || "2-4 days"}</p>
+                                </div>
+                              </div>
+                              <span className="font-black text-slate-900 text-xs">
+                                ₹{Number(c.rate).toFixed(0)}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* CUSTOMER & SHIPPING CARDS */}
