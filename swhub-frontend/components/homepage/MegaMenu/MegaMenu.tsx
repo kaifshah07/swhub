@@ -46,7 +46,7 @@ export default function MegaMenu() {
   const displayCategories = categories.length > 0 ? categories : DEFAULT_DEPARTMENTS.map((d, i) => ({ id: i + 1, ...d }));
 
   return (
-    <div className="border-b border-slate-200/80 bg-white sticky top-20 z-40 shadow-xs">
+    <div className="border-b border-slate-200/80 bg-white relative z-40 shadow-xs">
       <div className="mx-auto max-w-[1600px]">
         <div className="flex gap-6 overflow-x-auto px-4 py-2.5 text-xs sm:text-sm font-semibold whitespace-nowrap scrollbar-none items-center">
           {/* All Departments Button */}
