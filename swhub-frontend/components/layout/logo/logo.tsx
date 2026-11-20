@@ -45,7 +45,7 @@ export default function Logo({
         </div>
         {showTagline && (
           <span
-            className={`text-[9px] sm:text-[10px] font-bold tracking-widest uppercase mt-0.5 ${
+            className={`text-[9px] sm:text-[10px] font-bold tracking-widest uppercase mt-0.5 hidden sm:inline-block ${
               isDark ? "text-slate-400" : "text-slate-500"
             }`}
           >

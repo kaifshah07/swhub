@@ -102,12 +102,12 @@ export default function UserActions() {
   }
 
   return (
-    <div className="flex items-center gap-4 sm:gap-5 shrink-0">
+    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
       {/* WISHLIST */}
       <Link
         href="/wishlist"
         aria-label="Wishlist"
-        className="relative flex items-center justify-center p-1.5 text-slate-700 hover:text-primary transition"
+        className="relative hidden sm:flex items-center justify-center p-1.5 text-slate-700 hover:text-primary transition"
       >
         <Heart size={21} />
         {wishlistCount > 0 && (
@@ -121,9 +121,9 @@ export default function UserActions() {
       <button
         onClick={() => window.dispatchEvent(new CustomEvent("openCartDrawer"))}
         aria-label="Shopping Cart"
-        className="relative flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-slate-900 border border-slate-200 hover:border-primary hover:text-primary group transition"
+        className="relative flex items-center gap-1.5 sm:gap-2 rounded-full bg-white px-2.5 sm:px-3.5 py-1.5 text-slate-900 border border-slate-200 hover:border-primary hover:text-primary group transition"
       >
-        <ShoppingCart size={19} className="text-slate-700 group-hover:text-primary transition-colors" />
+        <ShoppingCart size={18} className="text-slate-700 group-hover:text-primary transition-colors" />
         <span className="text-xs font-bold hidden md:inline-block">Cart</span>
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1.5 text-[11px] font-extrabold text-white">
           {cartCount > 99 ? "99+" : cartCount}
@@ -191,7 +191,7 @@ export default function UserActions() {
         <button
           onClick={() => openCustomerAuthModal({ defaultTab: "login" })}
           aria-label="Sign In"
-          className="flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 px-4 py-2 text-xs font-bold text-white transition shadow-sm"
+          className="flex items-center gap-1 sm:gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-white transition shadow-sm"
         >
           <User size={14} />
           <span>Sign In</span>

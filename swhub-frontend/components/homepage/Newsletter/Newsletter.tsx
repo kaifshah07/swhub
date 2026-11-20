@@ -40,7 +40,7 @@ export default function Newsletter() {
             <span>You're all set! Check your email for special welcome coupons.</span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-6 flex max-w-md mx-auto gap-2">
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row max-w-md mx-auto gap-2">
             <input
               type="email"
               value={email}

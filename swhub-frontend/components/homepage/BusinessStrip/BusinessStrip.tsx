@@ -3,11 +3,11 @@ import { ArrowRight, Store, Building2, TrendingUp, ShieldCheck } from "lucide-re
 
 export default function BusinessSection() {
   return (
-    <section className="py-12 bg-slate-50">
+    <section className="py-12 bg-slate-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-6">
           {/* Vendor */}
-          <div className="overflow-hidden rounded-[32px] bg-gradient-to-br from-secondary via-slate-800 to-slate-900 p-8 text-white shadow-lg border border-slate-800 flex flex-col justify-between">
+          <div className="overflow-hidden rounded-[32px] bg-gradient-to-br from-secondary via-slate-800 to-slate-900 p-6 sm:p-8 text-white shadow-lg border border-slate-800 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Store size={18} className="text-primary" />
@@ -24,18 +24,18 @@ export default function BusinessSection() {
                 List your FMCG, grocery, crockery, or household products on SW Hub and reach high-intent daily shoppers across top cities.
               </p>
 
-              <div className="mt-6 flex gap-6">
+              <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-6">
                 <div>
-                  <h4 className="text-xl sm:text-2xl font-black text-white">100,000+</h4>
-                  <p className="text-xs text-slate-400">Monthly Shoppers</p>
+                  <h4 className="text-lg sm:text-2xl font-black text-white">100,000+</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400">Monthly Shoppers</p>
                 </div>
                 <div>
-                  <h4 className="text-xl sm:text-2xl font-black text-white">48 Hours</h4>
-                  <p className="text-xs text-slate-400">Quick Onboarding</p>
+                  <h4 className="text-lg sm:text-2xl font-black text-white">48 Hours</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400">Quick Onboarding</p>
                 </div>
                 <div>
-                  <h4 className="text-xl sm:text-2xl font-black text-primary">Lowest</h4>
-                  <p className="text-xs text-slate-400">Commission Rates</p>
+                  <h4 className="text-lg sm:text-2xl font-black text-primary">Lowest</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400">Commission Rates</p>
                 </div>
               </div>
             </div>
@@ -52,7 +52,7 @@ export default function BusinessSection() {
           </div>
 
           {/* Franchise */}
-          <div className="overflow-hidden rounded-[32px] bg-gradient-to-br from-secondary via-primary to-slate-900 p-8 text-white shadow-lg border border-primary/60 flex flex-col justify-between">
+          <div className="overflow-hidden rounded-[32px] bg-gradient-to-br from-secondary via-primary to-slate-900 p-6 sm:p-8 text-white shadow-lg border border-primary/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Building2 size={18} className="text-primary" />
@@ -69,18 +69,18 @@ export default function BusinessSection() {
                 Launch a high-turnover daily needs and grocery convenience store with full POS billing, central inventory replenishment, and tech support.
               </p>
 
-              <div className="mt-6 flex gap-6">
+              <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-6">
                 <div>
-                  <h4 className="text-xl sm:text-2xl font-black text-white">Pan India</h4>
-                  <p className="text-xs text-slate-400">High Growth Areas</p>
+                  <h4 className="text-lg sm:text-2xl font-black text-white">Pan India</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400">High Growth Areas</p>
                 </div>
                 <div>
-                  <h4 className="text-xl sm:text-2xl font-black text-white">100%</h4>
-                  <p className="text-xs text-slate-400">Supply Chain Support</p>
+                  <h4 className="text-lg sm:text-2xl font-black text-white">100%</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400">Supply Chain Support</p>
                 </div>
                 <div>
-                  <h4 className="text-xl sm:text-2xl font-black text-primary">Fast ROI</h4>
-                  <p className="text-xs text-slate-400">High Daily Footfalls</p>
+                  <h4 className="text-lg sm:text-2xl font-black text-primary">Fast ROI</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-400">High Daily Footfalls</p>
                 </div>
               </div>
             </div>

@@ -169,7 +169,7 @@ export default function FlashSale() {
 
   if (loading) {
     return (
-      <section className="w-full bg-gradient-to-r from-[#ff7373] via-[#ffa86b] to-[#f6cb65] py-8 sm:py-10">
+      <section className="w-full overflow-hidden bg-gradient-to-r from-[#ff7373] via-[#ffa86b] to-[#f6cb65] py-8 sm:py-10">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <div className="h-8 w-60 bg-white/40 rounded-full mb-6 animate-pulse" />
           <div className="grid grid-cols-2 gap-3.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -189,7 +189,7 @@ export default function FlashSale() {
   }
 
   return (
-    <section className="w-full bg-gradient-to-r from-[#ff7373] via-[#ffa86b] to-[#f6cb65] py-8 sm:py-10">
+    <section className="w-full overflow-hidden bg-gradient-to-r from-[#ff7373] via-[#ffa86b] to-[#f6cb65] py-8 sm:py-10">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
         {/* Header Strip */}
         <div className="mb-5 sm:mb-6 flex items-center justify-between gap-4">
@@ -251,7 +251,7 @@ export default function FlashSale() {
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className="sm:hidden absolute -left-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md"
+            className="sm:hidden absolute left-1 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md"
           >
             <ChevronLeft size={18} />
           </button>
@@ -259,7 +259,7 @@ export default function FlashSale() {
             type="button"
             onClick={scrollRight}
             aria-label="Next"
-            className="sm:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md"
+            className="sm:hidden absolute right-1 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-md"
           >
             <ChevronRight size={18} />
           </button>

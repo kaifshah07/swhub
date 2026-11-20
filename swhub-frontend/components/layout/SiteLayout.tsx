@@ -35,7 +35,7 @@ export default function SiteLayout({
 
       <Navbar />
 
-      <main className="pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
+      <main className="w-full max-w-full overflow-x-hidden pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
       <MobileBottomNav />
 
       <Footer />

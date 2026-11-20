@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-slate-50/95 backdrop-blur-xl">
       <Container>
-        <div className="flex h-20 items-center justify-between gap-8">
+        <div className="flex h-20 items-center justify-between gap-2 sm:gap-4 md:gap-8">
           <Logo />
 
           <SearchBar />
